@@ -2,12 +2,12 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 
-class TimerHomePage extends StatefulWidget {
+class MainScreen extends StatefulWidget {
   @override
-  _TimerHomePageState createState() => _TimerHomePageState();
+  _MainScreenState createState() => _MainScreenState();
 }
 
-class _TimerHomePageState extends State<TimerHomePage> {
+class _MainScreenState extends State<MainScreen> {
   Timer? _timer;
   int _totalStudyTime = 0;
   int _studyTime = 0;
@@ -15,15 +15,17 @@ class _TimerHomePageState extends State<TimerHomePage> {
   int _totalBreakTime = 0;
   int _breakTimeMin = 0;
   int _breakTimeMax = 0;
+  int _stdTime = 0;
   bool _isStudying = false;
 
   void startTimer() {
     _isStudying = true;
-    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
         if (_studyTime > 0) {
           _studyTime--;
-          _totalStudyTime--;
+          _totalStudyTime++;
+          _stdTime++;
         } else {
           timer.cancel();
           _isStudying = false;
@@ -37,7 +39,7 @@ class _TimerHomePageState extends State<TimerHomePage> {
     _isStudying = false;
     _breakTime = _getRandomBreakTime();
     _totalBreakTime += _breakTime;
-    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
         if (_breakTime > 0) {
           _breakTime--;
@@ -53,35 +55,33 @@ class _TimerHomePageState extends State<TimerHomePage> {
   }
 
   int _getRandomBreakTime() {
-    return new Random().nextInt(_breakTimeMax - _breakTimeMin + 1) +
-        _breakTimeMin;
+    return Random().nextInt(_breakTimeMax - _breakTimeMin + 1) + _breakTimeMin;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Study Timer"),
+        title: const Text("Study Timer"),
       ),
       body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
+          children: [
             TextField(
               onChanged: (value) {
                 _totalStudyTime = int.parse(value) * 60; // minutes to seconds
                 _studyTime = _totalStudyTime;
               },
               keyboardType: TextInputType.number,
-              decoration:
-                  InputDecoration(hintText: "Enter total study time (minutes)"),
+              decoration: const InputDecoration(
+                  hintText: "Enter total study time (minutes)"),
             ),
             TextField(
               onChanged: (value) {
                 _breakTimeMin = int.parse(value);
               },
               keyboardType: TextInputType.number,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                   hintText: "Enter minimum break time (seconds)"),
             ),
             TextField(
@@ -89,18 +89,19 @@ class _TimerHomePageState extends State<TimerHomePage> {
                 _breakTimeMax = int.parse(value);
               },
               keyboardType: TextInputType.number,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                   hintText: "Enter maximum break time (seconds)"),
             ),
-            Text("Study time left: ${_studyTime}s"),
-            Text("Break time left: ${_breakTime}s"),
+            _breakTime == 0 && _studyTime != 0
+                ? Text("Study time left: ${_studyTime}s")
+                : Text("Break time left: ${_breakTime}s"),
             ElevatedButton(
               onPressed: () {
                 if (!_isStudying && _totalStudyTime > 0) {
                   startTimer();
                 }
               },
-              child: Text("Start studying"),
+              child: const Text("Start studying"),
             ),
             ElevatedButton(
               onPressed: () {
@@ -109,7 +110,7 @@ class _TimerHomePageState extends State<TimerHomePage> {
                   startBreakTimer();
                 }
               },
-              child: Text("Take a break"),
+              child: const Text("Take a break"),
             ),
             ElevatedButton(
               onPressed: () {
@@ -120,9 +121,8 @@ class _TimerHomePageState extends State<TimerHomePage> {
                   print("Total study time: ${_totalStudyTime}s");
                 }
               },
-              child: Text("Stop studying"),
+              child: const Text("Stop studying"),
             ),
-            Text('$_totalBreakTime')
           ],
         ),
       ),

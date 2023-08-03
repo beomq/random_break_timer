@@ -44,7 +44,7 @@ class AuthGate extends StatelessWidget {
         }
 
         // Render your application if authenticated
-        return TimerHomePage();
+        return MainScreen();
       },
     );
   }

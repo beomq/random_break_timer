@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:random_break_timer/ui/auth/auth_gate.dart';
 import 'package:random_break_timer/ui/main/main_screen.dart';
+import 'package:random_break_timer/ui/study_time_input_screen.dart';
 
 class LoadingScreen extends StatefulWidget {
   @override
@@ -38,7 +39,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
             ),
           );
         } else {
-          return TimerHomePage();
+          return StudyTimeInputScreen();
         }
       },
     );
