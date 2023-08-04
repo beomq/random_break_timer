@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:random_break_timer/firebase_options.dart';
-import 'package:random_break_timer/ui/main/loading_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:random_break_timer/ui/setting/setting_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: LoadingScreen(),
+      home: SettingScreen(),
     );
   }
 }
