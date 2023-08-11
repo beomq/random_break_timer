@@ -38,7 +38,11 @@ class _LoadingScreenState extends State<LoadingScreen> {
             ),
           );
         } else {
-          return TimerHomePage();
+          return TimerHomePage(
+            totalStudyTime: Duration(minutes: 0),
+            minBreakTime: Duration(minutes: 0),
+            maxBreakTime: Duration(minutes: 0),
+          );
         }
       },
     );

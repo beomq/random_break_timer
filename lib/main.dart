@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:random_break_timer/ttt.dart';
 import 'package:random_break_timer/ui/main/loading_screen.dart';
 
 void main() => runApp(MyApp());
