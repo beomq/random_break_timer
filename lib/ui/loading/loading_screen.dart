@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-import 'package:random_break_timer/ui/auth/auth_gate.dart';
+import 'package:random_break_timer/ui/input/study_time_input_screen.dart';
 import 'package:random_break_timer/ui/main/main_screen.dart';
 
 class LoadingScreen extends StatefulWidget {
@@ -24,7 +24,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Lottie.asset('assets/LottieLogo1.json',
+                  Lottie.asset('assets/Lottie1.json',
                       height: 200, fit: BoxFit.cover),
                   const SizedBox(
                     height: 30,
@@ -38,11 +38,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
             ),
           );
         } else {
-          return TimerHomePage(
-            totalStudyTime: Duration(minutes: 0),
-            minBreakTime: Duration(minutes: 0),
-            maxBreakTime: Duration(minutes: 0),
-          );
+          return StudyTimeInputScreen();
         }
       },
     );

@@ -2,6 +2,9 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
+import 'package:random_break_timer/ui/widget/custom_button.dart';
+import 'package:random_break_timer/ui/widget/custom_time_text.dart';
 
 class TimerHomePage extends StatefulWidget {
   Duration totalStudyTime;
@@ -27,6 +30,7 @@ class _TimerHomePageState extends State<TimerHomePage> {
   late Duration _breakTime;
   Duration _elapsedTime = Duration.zero;
   bool _isStudying = false;
+  bool _isPause = false;
   List<Duration> _studyAndBreakTime = [];
 
   @override
@@ -39,6 +43,8 @@ class _TimerHomePageState extends State<TimerHomePage> {
   }
 
   void _start() {
+    _stop();
+    _isPause = false;
     _isStudying = true;
     _timer = Timer.periodic(
       const Duration(seconds: 1),
@@ -54,7 +60,9 @@ class _TimerHomePageState extends State<TimerHomePage> {
   }
 
   void _stop() {
+    _isPause = true;
     _timer?.cancel();
+    setState(() {});
   }
 
   Duration getRandomDuration(Duration min, Duration max) {
@@ -73,6 +81,7 @@ class _TimerHomePageState extends State<TimerHomePage> {
     _stop();
     _studyAndBreakTime.add(_elapsedTime);
     _elapsedTime = Duration.zero;
+    _isPause = false;
     _isStudying = false;
     _breakTime = getRandomDuration(_minBreakTime, _maxBreakTime);
     _studyAndBreakTime.add(_breakTime);
@@ -229,51 +238,88 @@ class _TimerHomePageState extends State<TimerHomePage> {
       return "${twoDigits(duration.inHours)}:$twoDigitMinutes:$twoDigitSeconds";
     }
 
+    String _formatDuration(Duration duration) {
+      String twoDigits(int n) => n.toString().padLeft(2, "0");
+      String hours =
+          duration.inHours != 0 ? "${twoDigits(duration.inHours)} : " : "";
+      String minutes = duration.inMinutes != 0
+          ? "${twoDigits(duration.inMinutes.remainder(60))} : "
+          : '';
+      String seconds = "${twoDigits(duration.inSeconds.remainder(60))}";
+
+      return hours + minutes + seconds;
+    }
+
+    Column _buildStudyBreakPairs() {
+      List<Widget> tiles = [];
+
+      for (int i = 0; i < _studyAndBreakTime.length - 1; i += 2) {
+        Duration studyDuration = _studyAndBreakTime[i];
+        Duration breakDuration = _studyAndBreakTime[i + 1];
+
+        tiles.add(
+          ListTile(
+            title: Text(
+              '공부: ${_formatDuration(studyDuration)} 휴식: ${_formatDuration(breakDuration)}',
+            ),
+          ),
+        );
+      }
+
+      return Column(children: tiles);
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Study Timer"),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _isStudying
-                ? Text(
-                    '${_time.inHours} : ${_time.inMinutes.remainder(60)} : ${_time.inSeconds.remainder(60)} ')
-                : Text(
-                    '${_breakTime.inMinutes.remainder(60)} : ${_breakTime.inSeconds.remainder(60)} '),
-            ElevatedButton(
-              onPressed: () => _showModal(context),
-              child: const Text('시간 재설정 하기'),
-            ),
-            !_isStudying
-                ? ElevatedButton(
-                    onPressed: () => _start(),
-                    child: const Text('시작'),
-                  )
-                : const ElevatedButton(
-                    onPressed: null,
-                    child: Text('시작'),
-                  ),
-            _isStudying
-                ? ElevatedButton(
-                    onPressed: () => _startBreakTime(),
-                    child: const Text('쉬는시간 시작'),
-                  )
-                : const ElevatedButton(
-                    onPressed: null,
-                    child: Text('쉬는시간 시작'),
-                  ),
-            _isStudying
-                ? ElevatedButton(
-                    onPressed: () => _stop(), child: const Text('정지'))
-                : ElevatedButton(onPressed: null, child: Text('정지')),
-            Text(durationToString(widget.totalStudyTime +
-                const Duration(seconds: 1, minutes: 5))),
-            Text(widget.minBreakTime.toString()),
-            Text(widget.maxBreakTime.toString()),
-            Text('${_studyAndBreakTime.toString()}'),
-          ],
+      body: SingleChildScrollView(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _isStudying
+                  ? Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Lottie.asset('assets/study.json',
+                            height: 200, fit: BoxFit.cover),
+                        const SizedBox(
+                          height: 30,
+                        ),
+                      ],
+                    )
+                  : Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Lottie.asset('assets/breaktime.json',
+                            height: 200, fit: BoxFit.cover),
+                        const SizedBox(
+                          height: 30,
+                        ),
+                      ],
+                    ),
+              _isStudying
+                  ? CustomTimeText(time: _time)
+                  : CustomTimeText(time: _breakTime),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _isStudying && !_isPause
+                      ? CustomButton(onPressed: null, text: '시작')
+                      : CustomButton(onPressed: () => _start(), text: '시작'),
+                  !_isStudying && !_isPause
+                      ? CustomButton(onPressed: null, text: '쉬는시간 시작')
+                      : CustomButton(
+                          onPressed: () => _startBreakTime(), text: '쉬는시간 시작'),
+                  !_isPause
+                      ? CustomButton(onPressed: () => _stop(), text: '일시정지')
+                      : CustomButton(onPressed: null, text: '정지'),
+                ],
+              ),
+              _buildStudyBreakPairs()
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
