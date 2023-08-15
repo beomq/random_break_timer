@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:lottie/lottie.dart';
 import 'package:random_break_timer/ui/widget/custom_button.dart';
 import 'package:random_break_timer/ui/widget/custom_time_text.dart';
@@ -28,7 +29,8 @@ class _TimerHomePageState extends State<TimerHomePage> {
   late Duration _minBreakTime;
   late Duration _maxBreakTime;
   late Duration _breakTime;
-  Duration _elapsedTime = Duration.zero;
+  Duration _elapsedStudyTime = Duration.zero;
+  Duration _elapsedBreakTime = Duration.zero;
   bool _isStudying = false;
   bool _isPause = false;
   List<Duration> _studyAndBreakTime = [];
@@ -52,7 +54,7 @@ class _TimerHomePageState extends State<TimerHomePage> {
         if (_time != Duration.zero) {
           setState(() {
             _time -= const Duration(seconds: 1);
-            _elapsedTime += const Duration(seconds: 1);
+            _elapsedStudyTime += const Duration(seconds: 1);
           });
         }
       },
@@ -79,12 +81,11 @@ class _TimerHomePageState extends State<TimerHomePage> {
 
   void _startBreakTime() {
     _stop();
-    _studyAndBreakTime.add(_elapsedTime);
-    _elapsedTime = Duration.zero;
+    _studyAndBreakTime.add(_elapsedStudyTime);
+    _elapsedStudyTime = Duration.zero;
     _isPause = false;
     _isStudying = false;
     _breakTime = getRandomDuration(_minBreakTime, _maxBreakTime);
-    _studyAndBreakTime.add(_breakTime);
     _timer = Timer.periodic(
       const Duration(seconds: 1),
       (timer) {
@@ -92,10 +93,13 @@ class _TimerHomePageState extends State<TimerHomePage> {
           setState(
             () {
               _breakTime -= const Duration(seconds: 1);
+              _elapsedBreakTime += const Duration(seconds: 1);
             },
           );
         } else {
           _stop();
+          _studyAndBreakTime.add(_elapsedBreakTime);
+          _elapsedBreakTime = Duration.zero;
           _start();
         }
       },
@@ -260,7 +264,7 @@ class _TimerHomePageState extends State<TimerHomePage> {
         tiles.add(
           ListTile(
             title: Text(
-              '공부: ${_formatDuration(studyDuration)} 휴식: ${_formatDuration(breakDuration)}',
+              '${(i / 2 + 1).toInt()}. 공부: ${_formatDuration(studyDuration)} 휴식: ${_formatDuration(breakDuration)}',
             ),
           ),
         );
@@ -271,54 +275,94 @@ class _TimerHomePageState extends State<TimerHomePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Study Timer"),
+        actions: [Icon(Icons.add)],
       ),
       body: SingleChildScrollView(
         child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _isStudying
-                  ? Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Lottie.asset('assets/study.json',
-                            height: 200, fit: BoxFit.cover),
-                        const SizedBox(
-                          height: 30,
-                        ),
-                      ],
-                    )
-                  : Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Lottie.asset('assets/breaktime.json',
-                            height: 200, fit: BoxFit.cover),
-                        const SizedBox(
-                          height: 30,
-                        ),
-                      ],
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Hello User',
+                    style: TextStyle(
+                      fontSize: 30,
                     ),
-              _isStudying
-                  ? CustomTimeText(time: _time)
-                  : CustomTimeText(time: _breakTime),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _isStudying && !_isPause
-                      ? CustomButton(onPressed: null, text: '시작')
-                      : CustomButton(onPressed: () => _start(), text: '시작'),
-                  !_isStudying && !_isPause
-                      ? CustomButton(onPressed: null, text: '쉬는시간 시작')
-                      : CustomButton(
-                          onPressed: () => _startBreakTime(), text: '쉬는시간 시작'),
-                  !_isPause
-                      ? CustomButton(onPressed: () => _stop(), text: '일시정지')
-                      : CustomButton(onPressed: null, text: '정지'),
-                ],
-              ),
-              _buildStudyBreakPairs()
-            ],
+                  ),
+                ),
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    border: Border.all(width: 1),
+                    color: const Color(0xFFE7E7E7),
+                  ),
+                  child: Column(
+                    children: [
+                      _isStudying
+                          ? Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Lottie.asset('assets/study.json',
+                                    height: 200, fit: BoxFit.cover),
+                                const SizedBox(
+                                  height: 30,
+                                ),
+                              ],
+                            )
+                          : Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Lottie.asset('assets/breaktime.json',
+                                    height: 200, fit: BoxFit.cover),
+                                const SizedBox(
+                                  height: 30,
+                                ),
+                              ],
+                            ),
+                      _isStudying
+                          ? CustomTimeText(time: _time)
+                          : CustomTimeText(time: _breakTime),
+                    ],
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    (_isStudying && !_isPause) || (!_isStudying && _isPause)
+                        ? CustomButton(onPressed: null, text: '시작')
+                        : CustomButton(onPressed: () => _start(), text: '시작'),
+                    !_isStudying && !_isPause
+                        ? CustomButton(onPressed: null, text: '쉬는시간 시작')
+                        : CustomButton(
+                            onPressed: () => _startBreakTime(),
+                            text: '쉬는시간 시작'),
+                    !_isPause
+                        ? CustomButton(onPressed: () => _stop(), text: '일시정지')
+                        : CustomButton(onPressed: null, text: '정지'),
+                  ],
+                ),
+                _studyAndBreakTime.isNotEmpty
+                    ? Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          border: Border.all(width: 1),
+                          color: const Color(0xFFE7E7E7),
+                        ),
+                        child: Column(
+                          children: [
+                            const Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text('공부 시간'),
+                            ),
+                            _buildStudyBreakPairs(),
+                          ],
+                        ))
+                    : Container()
+              ],
+            ),
           ),
         ),
       ),
