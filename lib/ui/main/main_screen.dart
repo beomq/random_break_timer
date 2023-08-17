@@ -64,7 +64,11 @@ class _TimerHomePageState extends State<TimerHomePage> {
   }
 
   void _start() {
-    _stop();
+    if (!_isStudying && _studyAndBreakTime.isNotEmpty) {
+      _timer?.cancel();
+      _studyAndBreakTime.add(_elapsedBreakTime);
+      _elapsedBreakTime = Duration.zero;
+    }
     _isPause = false;
     _isStudying = true;
     _timer = Timer.periodic(
@@ -90,18 +94,16 @@ class _TimerHomePageState extends State<TimerHomePage> {
     final random = Random();
     int range = max.inSeconds - min.inSeconds;
 
-    if (range < 0) {
-      throw ArgumentError('max Duration should be greater than min Duration');
-    }
-
     int randomSeconds = random.nextInt(range + 1);
     return min + Duration(seconds: randomSeconds);
   }
 
   void _startBreakTime() {
-    _stop();
-    _studyAndBreakTime.add(_elapsedStudyTime);
-    _elapsedStudyTime = Duration.zero;
+    _timer?.cancel();
+    if (_isStudying) {
+      _studyAndBreakTime.add(_elapsedStudyTime);
+      _elapsedStudyTime = Duration.zero;
+    }
     _isPause = false;
     _isStudying = false;
     _breakTime = getRandomDuration(_minBreakTime, _maxBreakTime);
@@ -116,10 +118,9 @@ class _TimerHomePageState extends State<TimerHomePage> {
             },
           );
         } else {
-          _stop();
-          _studyAndBreakTime.add(_elapsedBreakTime);
-          _elapsedBreakTime = Duration.zero;
+          _timer?.cancel();
           _start();
+          setState(() {});
         }
       },
     );
@@ -316,7 +317,7 @@ class _TimerHomePageState extends State<TimerHomePage> {
                   width: double.infinity,
                   decoration: BoxDecoration(
                     border: Border.all(width: 1),
-                    color: const Color(0xFFE7E7E7),
+                    color: const Color(0xFFFFFFFF),
                   ),
                   child: Column(
                     children: [
@@ -344,23 +345,23 @@ class _TimerHomePageState extends State<TimerHomePage> {
                       _isStudying
                           ? CustomTimeText(time: _time)
                           : CustomTimeText(time: _breakTime),
+                      const SizedBox(
+                        height: 30,
+                      ),
                     ],
                   ),
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    (_isStudying && !_isPause) || (!_isStudying && _isPause)
-                        ? CustomButton(onPressed: null, text: '시작')
+                    _isStudying && !_isPause
+                        ? CustomButton(onPressed: () => _stop(), text: '일시정지')
                         : CustomButton(onPressed: () => _start(), text: '시작'),
                     !_isStudying && !_isPause
-                        ? CustomButton(onPressed: null, text: '쉬는시간 시작')
+                        ? CustomButton(onPressed: () => _stop(), text: '일시정지')
                         : CustomButton(
                             onPressed: () => _startBreakTime(),
                             text: '쉬는시간 시작'),
-                    !_isPause
-                        ? CustomButton(onPressed: () => _stop(), text: '일시정지')
-                        : CustomButton(onPressed: null, text: '정지'),
                     CustomButton(
                         text: '공부 종료',
                         onPressed: () async {
@@ -381,7 +382,7 @@ class _TimerHomePageState extends State<TimerHomePage> {
                         }),
                   ],
                 ),
-                _studyAndBreakTime.isNotEmpty
+                _studyAndBreakTime.length >= 2
                     ? Container(
                         width: double.infinity,
                         decoration: BoxDecoration(

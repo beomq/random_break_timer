@@ -12,10 +12,10 @@ class CustomTimeText extends StatelessWidget {
     return time.inHours > 0
         ? Text(
             '${time.inHours} : ${time.inMinutes.remainder(60)} : ${time.inSeconds.remainder(60)} ',
-            style: TextStyle(fontSize: 30),
+            style: TextStyle(fontSize: 40),
           )
         : Text(
             '${time.inMinutes.remainder(60)} : ${time.inSeconds.remainder(60)} ',
-            style: TextStyle(fontSize: 30));
+            style: TextStyle(fontSize: 40));
   }
 }
