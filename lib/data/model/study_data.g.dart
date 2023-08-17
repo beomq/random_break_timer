@@ -21,7 +21,7 @@ class StudyDataAdapter extends TypeAdapter<StudyData> {
       totalStudyTime: fields[1] as String,
       targetedStudyTime: fields[2] as String,
       totalBreakTime: fields[3] as String,
-      StudyAndBreakTime: (fields[4] as List).cast<String>(),
+      StudyAndBreakTime: (fields[4] as List).cast<Duration>(),
     );
   }
 

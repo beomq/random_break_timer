@@ -10,7 +10,7 @@ late final Box<StudyData> datas;
 void main() async {
   await Hive.initFlutter();
   Hive.registerAdapter(StudyDataAdapter());
-  datas = await Hive.openBox<StudyData>('todolist.db');
+  datas = await Hive.openBox<StudyData>('studyData.db');
   runApp(MyApp());
 
   AwesomeNotifications().initialize(

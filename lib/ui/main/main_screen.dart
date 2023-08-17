@@ -4,6 +4,9 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:lottie/lottie.dart';
+import 'package:random_break_timer/data/model/study_data.dart';
+import 'package:random_break_timer/main.dart';
+import 'package:random_break_timer/ui/my_page/my_page_screen.dart';
 import 'package:random_break_timer/ui/widget/custom_button.dart';
 import 'package:random_break_timer/ui/widget/custom_time_text.dart';
 
@@ -34,6 +37,22 @@ class _TimerHomePageState extends State<TimerHomePage> {
   bool _isStudying = false;
   bool _isPause = false;
   List<Duration> _studyAndBreakTime = [];
+
+  Duration getTotalStudyTime() {
+    List<Duration> _oddIndexedNumbers = [];
+    for (int i = 1; i < _studyAndBreakTime.length; i += 2) {
+      _oddIndexedNumbers.add(_studyAndBreakTime[i]);
+    }
+    return _oddIndexedNumbers.reduce((a, b) => a + b);
+  }
+
+  Duration getTotalBreakTime() {
+    List<Duration> _breakIndexedNumbers = [];
+    for (int i = 0; i < _studyAndBreakTime.length; i += 2) {
+      _breakIndexedNumbers.add(_studyAndBreakTime[i]);
+    }
+    return _breakIndexedNumbers.reduce((a, b) => a + b);
+  }
 
   @override
   void initState() {
@@ -342,6 +361,24 @@ class _TimerHomePageState extends State<TimerHomePage> {
                     !_isPause
                         ? CustomButton(onPressed: () => _stop(), text: '일시정지')
                         : CustomButton(onPressed: null, text: '정지'),
+                    CustomButton(
+                        text: '공부 종료',
+                        onPressed: () async {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => MyPageScreen()),
+                          );
+                          await datas.add(
+                            StudyData(
+                              date: DateTime.now().toString(),
+                              totalStudyTime: getTotalStudyTime().toString(),
+                              targetedStudyTime: _time.toString(),
+                              totalBreakTime: getTotalBreakTime().toString(),
+                              StudyAndBreakTime: _studyAndBreakTime,
+                            ),
+                          );
+                        }),
                   ],
                 ),
                 _studyAndBreakTime.isNotEmpty

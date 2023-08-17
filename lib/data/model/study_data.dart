@@ -16,7 +16,7 @@ class StudyData extends HiveObject {
   String totalBreakTime;
 
   @HiveField(4)
-  List<String> StudyAndBreakTime;
+  List<Duration> StudyAndBreakTime;
 
   StudyData({
     required this.date,
