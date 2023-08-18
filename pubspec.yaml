@@ -89,6 +89,10 @@ flutter:
   assets:
     - assets/
     - assets/Lottie1.json
+    - assets/40.json
+    - assets/60.json
+    - assets/80.json
+    - assets/100.json
     - .env
   #   - images/a_dot_ham.jpeg
 

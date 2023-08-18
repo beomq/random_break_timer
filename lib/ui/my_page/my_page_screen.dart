@@ -54,8 +54,21 @@ class _MyPageScreenState extends State<MyPageScreen> {
       itemCount: studyDataList.length,
       itemBuilder: (context, index) {
         StudyData studyData = studyDataList[index];
+        Duration parseDuration(String duration) {
+          List<String> parts = duration.split(':');
+          return Duration(
+            hours: double.parse(parts[0]).toInt(),
+            minutes: double.parse(parts[1]).toInt(),
+            seconds: double.parse(parts[2]).toInt(),
+          );
+        }
+
+        Duration targetedDuration = parseDuration(studyData.targetedStudyTime);
+        Duration totalDuration = parseDuration(studyData.totalStudyTime);
+        double achievementRate =
+            totalDuration.inSeconds / targetedDuration.inSeconds * 100;
         return ExpansionTile(
-          title: Text('${_formatDate(studyData.date)}'),
+          title: Text(_formatDate(studyData.date)),
           children: [
             ListTile(
               title:
@@ -67,8 +80,11 @@ class _MyPageScreenState extends State<MyPageScreen> {
             ListTile(
               title: Text('총 쉬는 시간: ${_formatTime(studyData.totalBreakTime)}'),
             ),
+            ListTile(
+              title: Text('목표 달성률: ${achievementRate.toStringAsFixed(2)}%'),
+            ),
             ExpansionTile(
-              title: Text('Study and Break Time'),
+              title: const Text('Study and Break Time'),
               children: List<Widget>.generate(
                   studyData.StudyAndBreakTime.length ~/ 2, (int index) {
                 Duration studyDuration = studyData.StudyAndBreakTime[index * 2];

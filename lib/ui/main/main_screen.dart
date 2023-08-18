@@ -6,7 +6,10 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:lottie/lottie.dart';
 import 'package:random_break_timer/data/model/study_data.dart';
 import 'package:random_break_timer/main.dart';
+import 'package:random_break_timer/ui/input/study_time_input_screen.dart';
 import 'package:random_break_timer/ui/my_page/my_page_screen.dart';
+import 'package:random_break_timer/ui/result/result_screen.dart';
+import 'package:random_break_timer/ui/widget/custom_bottom_navigation_bar.dart';
 import 'package:random_break_timer/ui/widget/custom_button.dart';
 import 'package:random_break_timer/ui/widget/custom_time_text.dart';
 
@@ -43,6 +46,9 @@ class _TimerHomePageState extends State<TimerHomePage> {
     for (int i = 1; i < _studyAndBreakTime.length; i += 2) {
       _oddIndexedNumbers.add(_studyAndBreakTime[i]);
     }
+    if (_oddIndexedNumbers.isEmpty) {
+      return Duration.zero;
+    }
     return _oddIndexedNumbers.reduce((a, b) => a + b);
   }
 
@@ -50,6 +56,9 @@ class _TimerHomePageState extends State<TimerHomePage> {
     List<Duration> _breakIndexedNumbers = [];
     for (int i = 0; i < _studyAndBreakTime.length; i += 2) {
       _breakIndexedNumbers.add(_studyAndBreakTime[i]);
+    }
+    if (_breakIndexedNumbers.isEmpty) {
+      return Duration.zero;
     }
     return _breakIndexedNumbers.reduce((a, b) => a + b);
   }
@@ -126,133 +135,6 @@ class _TimerHomePageState extends State<TimerHomePage> {
     );
   }
 
-  void _showModal(BuildContext context) {
-    final formKey = GlobalKey<FormState>();
-    String totalStudyTime = '';
-    String minBreakTime = '';
-    String maxBreakTime = '';
-
-    Duration timeStringToSeconds(String timeString) {
-      if (timeString.length == 5) {
-        final parts = timeString.split(':');
-        int minutes = int.parse(parts[0]);
-        int seconds = int.parse(parts[1]);
-        return Duration(minutes: minutes, seconds: seconds);
-      } else {
-        final parts = timeString.split(':');
-        int hours = int.parse(parts[0]);
-        int minutes = int.parse(parts[1]);
-        int seconds = int.parse(parts[2]);
-        return Duration(hours: hours, minutes: minutes, seconds: seconds);
-      }
-    }
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          actions: [
-            Center(
-                child: ElevatedButton(
-                    onPressed: () {
-                      final formKeyState = formKey.currentState!;
-                      if (formKeyState.validate()) {
-                        formKeyState.save();
-                        final minTime = timeStringToSeconds(minBreakTime);
-                        final maxTime = timeStringToSeconds(maxBreakTime);
-
-                        if (minTime > maxTime) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('쉬는 시간의 범위를 확인 해 주세요'),
-                              duration: Duration(seconds: 1), // 메시지 표시 시간 설정
-                            ),
-                          );
-                          return;
-                        }
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => TimerHomePage(
-                                    totalStudyTime:
-                                        timeStringToSeconds(totalStudyTime),
-                                    minBreakTime:
-                                        timeStringToSeconds(minBreakTime),
-                                    maxBreakTime:
-                                        timeStringToSeconds(maxBreakTime),
-                                  )),
-                        );
-                      }
-                    },
-                    child: const Text('Start Study')))
-          ],
-          content: Form(
-            key: formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextFormField(
-                  onSaved: (value) => totalStudyTime = value!,
-                  decoration: const InputDecoration(
-                      hintText: 'ex) 11:11:11',
-                      labelStyle: TextStyle(
-                        fontSize: 11,
-                      ),
-                      labelText: '총 공부시간'),
-                  validator: (value) {
-                    if (!RegExp(r'^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$')
-                        .hasMatch(value!)) {
-                      return '올바른 시간 형식을 입력해주세요 ';
-                    }
-                    return null;
-                  },
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        onSaved: (value) => minBreakTime = value!,
-                        decoration: const InputDecoration(
-                          hintText: 'ex) 11:11',
-                          labelStyle: TextStyle(fontSize: 11),
-                          labelText: '최소 쉬는시간',
-                        ),
-                        validator: (value) {
-                          if (!RegExp(r'^([0-5]?\d):([0-5]\d)$')
-                              .hasMatch(value!)) {
-                            return '올바른 분:초 형식을 입력해주세요';
-                          }
-                          return null;
-                        },
-                      ),
-                    ),
-                    const Text(' ~ '),
-                    Expanded(
-                      child: TextFormField(
-                        onSaved: (value) => maxBreakTime = value!,
-                        decoration: const InputDecoration(
-                            hintText: 'ex) 11:11',
-                            labelStyle: TextStyle(fontSize: 11),
-                            labelText: '최대 쉬는시간'),
-                        validator: (value) {
-                          if (!RegExp(r'^([0-5]?\d):([0-5]\d)$')
-                              .hasMatch(value!)) {
-                            return '올바른 분:초 형식을 입력해주세요';
-                          }
-                          return null;
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     String durationToString(Duration duration) {
@@ -291,6 +173,52 @@ class _TimerHomePageState extends State<TimerHomePage> {
       }
 
       return Column(children: tiles);
+    }
+
+    final String goalAchievement =
+        (getTotalStudyTime().inSeconds / _time.inSeconds * 100).toString();
+    double goalAchievementValue = double.parse(goalAchievement);
+
+    void _showDialog(BuildContext context) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          double goalAchievementValue = double.parse(goalAchievement);
+          String lottieAsset;
+          if (goalAchievementValue >= 100) {
+            lottieAsset = 'assets/100.json';
+          } else if (goalAchievementValue >= 75) {
+            lottieAsset = 'assets/80.json';
+          } else if (goalAchievementValue >= 50) {
+            lottieAsset = 'assets/60.json';
+          } else {
+            lottieAsset = 'assets/40.json';
+          }
+          return AlertDialog(
+            title: Text('목표 달성도'),
+            content: SingleChildScrollView(
+              child: Column(
+                children: [
+                  Lottie.asset(lottieAsset,
+                      width: 200, height: 200, fit: BoxFit.cover),
+                  Text('$goalAchievement %'),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: Text('My page'),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => MyPageScreen()),
+                  );
+                },
+              ),
+            ],
+          );
+        },
+      );
     }
 
     return Scaffold(
@@ -365,6 +293,14 @@ class _TimerHomePageState extends State<TimerHomePage> {
                     CustomButton(
                       text: '공부 종료',
                       onPressed: () async {
+                        _stop();
+                        if (_isStudying) {
+                          _studyAndBreakTime.add(_elapsedStudyTime);
+                          _elapsedStudyTime = Duration.zero;
+                        } else {
+                          _studyAndBreakTime.add(_elapsedBreakTime);
+                          _elapsedBreakTime = Duration.zero;
+                        }
                         await datas.add(
                           StudyData(
                             date: DateTime.now().toString(),
@@ -374,14 +310,8 @@ class _TimerHomePageState extends State<TimerHomePage> {
                             StudyAndBreakTime: _studyAndBreakTime,
                           ),
                         );
-                        _stop();
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => MyPageScreen(),
-                          ),
-                        );
-                        setState(() {});
+
+                        _showDialog(context);
                       },
                     )
                   ],
@@ -407,13 +337,6 @@ class _TimerHomePageState extends State<TimerHomePage> {
             ),
           ),
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.restart_alt), label: '재입력'),
-          BottomNavigationBarItem(icon: Icon(Icons.timer), label: '타이머'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: '마이페이')
-        ],
       ),
     );
   }
