@@ -363,23 +363,27 @@ class _TimerHomePageState extends State<TimerHomePage> {
                             onPressed: () => _startBreakTime(),
                             text: '쉬는시간 시작'),
                     CustomButton(
-                        text: '공부 종료',
-                        onPressed: () async {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => MyPageScreen()),
-                          );
-                          await datas.add(
-                            StudyData(
-                              date: DateTime.now().toString(),
-                              totalStudyTime: getTotalStudyTime().toString(),
-                              targetedStudyTime: _time.toString(),
-                              totalBreakTime: getTotalBreakTime().toString(),
-                              StudyAndBreakTime: _studyAndBreakTime,
-                            ),
-                          );
-                        }),
+                      text: '공부 종료',
+                      onPressed: () async {
+                        await datas.add(
+                          StudyData(
+                            date: DateTime.now().toString(),
+                            totalStudyTime: getTotalStudyTime().toString(),
+                            targetedStudyTime: _time.toString(),
+                            totalBreakTime: getTotalBreakTime().toString(),
+                            StudyAndBreakTime: _studyAndBreakTime,
+                          ),
+                        );
+                        _stop();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => MyPageScreen(),
+                          ),
+                        );
+                        setState(() {});
+                      },
+                    )
                   ],
                 ),
                 _studyAndBreakTime.length >= 2
