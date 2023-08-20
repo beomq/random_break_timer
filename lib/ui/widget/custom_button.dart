@@ -29,7 +29,6 @@ class CustomButton extends StatelessWidget {
           text,
           style: const TextStyle(
             fontSize: 14,
-            fontFamily: "RobotoMono",
             color: Color(0xff072f71),
           ),
         ),
