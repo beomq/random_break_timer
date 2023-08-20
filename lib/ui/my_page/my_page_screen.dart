@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:random_break_timer/data/model/study_data.dart';
 import 'package:random_break_timer/main.dart';
+import 'package:random_break_timer/ui/widget/custom_button.dart';
+import 'package:random_break_timer/ui/widget/custom_recorded_container.dart';
 
 class MyPageScreen extends StatefulWidget {
   const MyPageScreen({Key? key}) : super(key: key);
@@ -12,11 +14,13 @@ class MyPageScreen extends StatefulWidget {
 
 class _MyPageScreenState extends State<MyPageScreen> {
   late List<StudyData> studyDataList;
+  late List<bool> _selectedItems = [];
 
   @override
   void initState() {
     super.initState();
     studyDataList = datas.values.toList();
+    _selectedItems = List.generate(studyDataList.length, (index) => false);
   }
 
   String _formatDate(String date) {
@@ -47,59 +51,163 @@ class _MyPageScreenState extends State<MyPageScreen> {
     return '$hours$minutes$seconds';
   }
 
+  Duration stringToDuration(String durationString) {
+    List<String> parts = durationString.split(':');
+    int hours = int.parse(parts[0]);
+    int minutes = int.parse(parts[1]);
+    int seconds = int.parse(parts[2].split('.')[0]);
+    return Duration(hours: hours, minutes: minutes, seconds: seconds);
+  }
+
+  Duration _getTotalStudyTime() {
+    Duration totalStudyTime = Duration();
+    for (int i = 0; i < studyDataList.length; i++) {
+      totalStudyTime += stringToDuration(studyDataList[i].totalStudyTime);
+    }
+    return totalStudyTime;
+  }
+
+  Duration _getTotalTargetedStudyTime() {
+    Duration totalTargetedStudyTime = Duration();
+    for (int i = 0; i < studyDataList.length; i++) {
+      totalTargetedStudyTime +=
+          stringToDuration(studyDataList[i].targetedStudyTime);
+    }
+    return totalTargetedStudyTime;
+  }
+
+  void _toggleSelection(int index) {
+    setState(() {
+      _selectedItems[index] = !_selectedItems[index];
+    });
+  }
+
+  void _deleteSelectedItems() {
+    setState(() {
+      for (int i = studyDataList.length - 1; i >= 0; i--) {
+        if (_selectedItems[i]) {
+          studyDataList.removeAt(i);
+          _selectedItems.removeAt(i);
+        }
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: ListView.builder(
-      itemCount: studyDataList.length,
-      itemBuilder: (context, index) {
-        StudyData studyData = studyDataList[index];
-        Duration parseDuration(String duration) {
-          List<String> parts = duration.split(':');
-          return Duration(
-            hours: double.parse(parts[0]).toInt(),
-            minutes: double.parse(parts[1]).toInt(),
-            seconds: double.parse(parts[2]).toInt(),
-          );
-        }
+        body: SafeArea(
+      child: Column(
+        children: [
+          Row(
+            children: [
+              CircleAvatar(),
+              Column(
+                children: [
+                  Text('Profile'),
+                  Text('name'),
+                ],
+              )
+            ],
+          ),
+          Text('Study Recorded'),
+          Container(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                CustomRecordedContainer(
+                    iconData: Icons.access_time,
+                    resultText: _getTotalStudyTime().toString().split('.')[0],
+                    detailText: '총 공부 시간'),
+                CustomRecordedContainer(
+                    iconData: Icons.access_time,
+                    resultText:
+                        '${(_getTotalStudyTime().inSeconds / _getTotalTargetedStudyTime().inSeconds * 100).toStringAsFixed(2)} %',
+                    detailText: '총 목표 달성율'),
+                CustomRecordedContainer(
+                    iconData: Icons.access_time,
+                    resultText: '${studyDataList.length}일',
+                    detailText: '공부 시작한지'),
+              ],
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: studyDataList.length,
+              itemBuilder: (context, index) {
+                StudyData studyData = studyDataList[index];
+                Duration parseDuration(String duration) {
+                  List<String> parts = duration.split(':');
+                  return Duration(
+                    hours: double.parse(parts[0]).toInt(),
+                    minutes: double.parse(parts[1]).toInt(),
+                    seconds: double.parse(parts[2]).toInt(),
+                  );
+                }
 
-        Duration targetedDuration = parseDuration(studyData.targetedStudyTime);
-        Duration totalDuration = parseDuration(studyData.totalStudyTime);
-        double achievementRate =
-            totalDuration.inSeconds / targetedDuration.inSeconds * 100;
-        return ExpansionTile(
-          title: Text(_formatDate(studyData.date)),
-          children: [
-            ListTile(
-              title:
-                  Text('목표 공부 시간: ${_formatTime(studyData.targetedStudyTime)}'),
-            ),
-            ListTile(
-              title: Text('총 공부 시간: ${_formatTime(studyData.totalStudyTime)}'),
-            ),
-            ListTile(
-              title: Text('총 쉬는 시간: ${_formatTime(studyData.totalBreakTime)}'),
-            ),
-            ListTile(
-              title: Text('목표 달성률: ${achievementRate.toStringAsFixed(2)}%'),
-            ),
-            ExpansionTile(
-              title: const Text('Study and Break Time'),
-              children: List<Widget>.generate(
-                  studyData.StudyAndBreakTime.length ~/ 2, (int index) {
-                Duration studyDuration = studyData.StudyAndBreakTime[index * 2];
-                Duration breakDuration =
-                    studyData.StudyAndBreakTime[index * 2 + 1];
-                return ListTile(
-                  title: Text(
-                    '${index + 1}. 공부 시간: ${_formatDuration(studyDuration)} 쉬는 시간: ${_formatDuration(breakDuration)}',
-                  ),
+                Duration targetedDuration =
+                    parseDuration(studyData.targetedStudyTime);
+                Duration totalDuration =
+                    parseDuration(studyData.totalStudyTime);
+                double achievementRate =
+                    totalDuration.inSeconds / targetedDuration.inSeconds * 100;
+                return ExpansionTile(
+                  title: Text(_formatDate(studyData.date)),
+                  children: [
+                    ListTile(
+                      title: Text(
+                          '목표 공부 시간: ${_formatTime(studyData.targetedStudyTime)}'),
+                    ),
+                    ListTile(
+                      title: Text(
+                          '총 공부 시간: ${_formatTime(studyData.totalStudyTime)}'),
+                    ),
+                    ListTile(
+                      title: Text(
+                          '총 쉬는 시간: ${_formatTime(studyData.totalBreakTime)}'),
+                    ),
+                    ListTile(
+                      title: Text(
+                          '목표 달성률: ${achievementRate.toStringAsFixed(2)}%'),
+                    ),
+                    ExpansionTile(
+                      title: const Text('Study and Break Time'),
+                      children: List<Widget>.generate(
+                          studyData.StudyAndBreakTime.length ~/ 2, (int index) {
+                        Duration studyDuration =
+                            studyData.StudyAndBreakTime[index * 2];
+                        Duration breakDuration =
+                            studyData.StudyAndBreakTime[index * 2 + 1];
+                        return ListTile(
+                          title: Text(
+                            '${index + 1}. 공부 시간: ${_formatDuration(studyDuration)} 쉬는 시간: ${_formatDuration(breakDuration)}',
+                          ),
+                        );
+                      }),
+                    ),
+                  ],
                 );
-              }),
+              },
             ),
-          ],
-        );
-      },
+          ),
+          Container(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              children: [
+                CustomButton(
+                  text: '선택 삭제',
+                  onPressed: _deleteSelectedItems,
+                ),
+                CustomButton(
+                  text: '로그아웃',
+                  onPressed: () {},
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     ));
   }
 }
