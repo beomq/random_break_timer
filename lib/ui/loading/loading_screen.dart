@@ -1,8 +1,7 @@
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-import 'package:random_break_timer/ui/input/study_time_input_screen.dart';
-import 'package:random_break_timer/ui/main/main_screen.dart';
+import 'package:random_break_timer/ui/auth/auth_gate.dart';
 
 class LoadingScreen extends StatefulWidget {
   @override
@@ -72,15 +71,15 @@ class _LoadingScreenState extends State<LoadingScreen> {
                     height: 30,
                   ),
                   const Text(
-                    '집중하세요',
-                    style: TextStyle(fontSize: 40),
+                    '오늘도 화이팅!',
+                    style: TextStyle(fontSize: 30),
                   ),
                 ],
               ),
             ),
           );
         } else {
-          return StudyTimeInputScreen();
+          return AuthGate();
         }
       },
     );
