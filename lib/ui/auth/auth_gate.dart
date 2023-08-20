@@ -4,7 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutterfire_ui/auth.dart';
 import 'dart:io' show Platform;
 
-import 'package:random_break_timer/ui/main/main_screen.dart';
+import 'package:random_break_timer/ui/tab_page.dart';
 
 class AuthGate extends StatelessWidget {
   const AuthGate({Key? key}) : super(key: key);
@@ -44,11 +44,7 @@ class AuthGate extends StatelessWidget {
         }
 
         // Render your application if authenticated
-        return TimerHomePage(
-          totalStudyTime: Duration(seconds: 5),
-          minBreakTime: Duration(seconds: 1),
-          maxBreakTime: Duration(seconds: 5),
-        );
+        return TabPage();
       },
     );
   }
