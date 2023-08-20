@@ -1,38 +1,35 @@
-import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:random_break_timer/data/model/duration_adapter.dart';
 import 'package:random_break_timer/data/model/study_data.dart';
-import 'package:random_break_timer/ui/auth/auth_gate.dart';
+import 'package:random_break_timer/firebase_options.dart';
 import 'package:random_break_timer/ui/loading/loading_screen.dart';
 
 late final Box<StudyData> datas;
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load();
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  final FirebaseAuth auth = FirebaseAuth.instance;
+  User? user = auth.currentUser;
   await Hive.initFlutter();
   Hive.registerAdapter(StudyDataAdapter());
   Hive.registerAdapter(DurationAdapter());
-  datas = await Hive.openBox<StudyData>('studyData.db');
+  if (user != null) {
+    try {
+      datas = await Hive.openBox<StudyData>(user.uid);
+    } catch (e) {
+      print('Failed to open Hive box: $e');
+    }
+  }
   runApp(MyApp());
-
-  AwesomeNotifications().initialize(
-      'resource://drawable/ic_stat_name',
-      [
-        NotificationChannel(
-          channelKey: 'scheduled_channel',
-          channelName: 'Scheduled Notifications',
-          defaultColor: Colors.teal,
-          locked: true,
-          importance: NotificationImportance.High,
-          channelDescription: '',
-        )
-      ],
-      channelGroups: [
-        NotificationChannelGroup(
-            channelGroupkey: 'scheduled_channel_group',
-            channelGroupName: 'Scheduled group')
-      ],
-      debug: true);
 }
 
 class MyApp extends StatefulWidget {
@@ -52,7 +49,8 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       title: 'Loading Screen Example',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primaryColor: const Color(0xffa8c7fa),
+        fontFamily: 'MavenPro',
       ),
       home: LoadingScreen(),
     );
