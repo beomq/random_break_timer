@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:random_break_timer/data/model/study_data.dart';
 import 'package:random_break_timer/main.dart';
+import 'package:random_break_timer/ui/my_page/my_page_view_model.dart';
 import 'package:random_break_timer/ui/widget/custom_button.dart';
 import 'package:random_break_timer/ui/widget/custom_recorded_container.dart';
 
@@ -13,14 +15,28 @@ class MyPageScreen extends StatefulWidget {
 }
 
 class _MyPageScreenState extends State<MyPageScreen> {
-  late List<StudyData> studyDataList;
+  final model = MyPageViewModel();
+  late Box<StudyData> studyDataList;
   late List<bool> _selectedItems = [];
 
   @override
   void initState() {
     super.initState();
-    studyDataList = datas.values.toList();
-    _selectedItems = List.generate(studyDataList.length, (index) => false);
+    _initHive();
+  }
+
+  Future<void> _initHive() async {
+    studyDataList = await Hive.openBox<StudyData>(model.getUserUid());
+    setState(() {
+      _selectedItems =
+          List.generate(studyDataList.values.length, (index) => false);
+    });
+  }
+
+  @override
+  void dispose() {
+    studyDataList.close();
+    super.dispose();
   }
 
   String _formatDate(String date) {
@@ -62,7 +78,8 @@ class _MyPageScreenState extends State<MyPageScreen> {
   Duration _getTotalStudyTime() {
     Duration totalStudyTime = Duration();
     for (int i = 0; i < studyDataList.length; i++) {
-      totalStudyTime += stringToDuration(studyDataList[i].totalStudyTime);
+      totalStudyTime +=
+          stringToDuration(studyDataList.getAt(i)!.totalStudyTime);
     }
     return totalStudyTime;
   }
@@ -71,7 +88,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
     Duration totalTargetedStudyTime = Duration();
     for (int i = 0; i < studyDataList.length; i++) {
       totalTargetedStudyTime +=
-          stringToDuration(studyDataList[i].targetedStudyTime);
+          stringToDuration(studyDataList.getAt(i)!.targetedStudyTime);
     }
     return totalTargetedStudyTime;
   }
@@ -86,7 +103,6 @@ class _MyPageScreenState extends State<MyPageScreen> {
     setState(() {
       for (int i = studyDataList.length - 1; i >= 0; i--) {
         if (_selectedItems[i]) {
-          studyDataList.removeAt(i);
           _selectedItems.removeAt(i);
         }
       }
@@ -101,11 +117,13 @@ class _MyPageScreenState extends State<MyPageScreen> {
         children: [
           Row(
             children: [
-              CircleAvatar(),
+              CircleAvatar(
+                backgroundImage: NetworkImage(model.getProfileImageUrl()),
+              ),
               Column(
                 children: [
                   Text('Profile'),
-                  Text('name'),
+                  Text(model.getNickname()),
                 ],
               )
             ],
@@ -136,7 +154,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
             child: ListView.builder(
               itemCount: studyDataList.length,
               itemBuilder: (context, index) {
-                StudyData studyData = studyDataList[index];
+                StudyData studyData = studyDataList.getAt(index)!;
                 Duration parseDuration(String duration) {
                   List<String> parts = duration.split(':');
                   return Duration(
@@ -147,9 +165,9 @@ class _MyPageScreenState extends State<MyPageScreen> {
                 }
 
                 Duration targetedDuration =
-                    parseDuration(studyData.targetedStudyTime);
+                    stringToDuration(studyData.targetedStudyTime);
                 Duration totalDuration =
-                    parseDuration(studyData.totalStudyTime);
+                    stringToDuration(studyData.totalStudyTime);
                 double achievementRate =
                     totalDuration.inSeconds / targetedDuration.inSeconds * 100;
                 return ExpansionTile(
@@ -157,15 +175,15 @@ class _MyPageScreenState extends State<MyPageScreen> {
                   children: [
                     ListTile(
                       title: Text(
-                          '목표 공부 시간: ${_formatTime(studyData.targetedStudyTime)}'),
+                          '목표 공부 시간: ${_formatTime(studyData.targetedStudyTime.toString())}'),
                     ),
                     ListTile(
                       title: Text(
-                          '총 공부 시간: ${_formatTime(studyData.totalStudyTime)}'),
+                          '총 공부 시간: ${_formatTime(studyData.totalStudyTime.toString())}'),
                     ),
                     ListTile(
                       title: Text(
-                          '총 쉬는 시간: ${_formatTime(studyData.totalBreakTime)}'),
+                          '총 쉬는 시간: ${_formatTime(studyData.totalBreakTime.toString())}'),
                     ),
                     ListTile(
                       title: Text(
@@ -200,8 +218,10 @@ class _MyPageScreenState extends State<MyPageScreen> {
                   onPressed: _deleteSelectedItems,
                 ),
                 CustomButton(
-                  text: '로그아웃',
-                  onPressed: () {},
+                  text: 'LOGOUT',
+                  onPressed: () {
+                    model.logout();
+                  },
                 ),
               ],
             ),
