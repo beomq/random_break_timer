@@ -11,23 +11,27 @@ class CustomButton extends StatelessWidget {
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-        padding: EdgeInsets.symmetric(horizontal: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        backgroundColor: const Color(0xffa8c7fa),
         elevation: 2.0,
-        shadowColor: Color.fromRGBO(0, 0, 0, 0.8),
+        shadowColor: Colors.grey,
         shape: RoundedRectangleBorder(
-          side: BorderSide(
+          side: const BorderSide(
             color: Colors.white,
             width: 1,
           ),
           borderRadius: BorderRadius.circular(4),
         ),
       ),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 14,
-          fontFamily: "RobotoMono",
-          color: Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
+        child: Text(
+          text,
+          style: const TextStyle(
+            fontSize: 14,
+            fontFamily: "RobotoMono",
+            color: Color(0xff072f71),
+          ),
         ),
       ),
     );
