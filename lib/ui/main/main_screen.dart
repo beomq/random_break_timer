@@ -1,19 +1,16 @@
 import 'dart:async';
 import 'dart:math';
-
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:lottie/lottie.dart';
 import 'package:random_break_timer/data/model/study_data.dart';
-import 'package:random_break_timer/main.dart';
-import 'package:random_break_timer/ui/input/study_time_input_screen.dart';
-import 'package:random_break_timer/ui/my_page/my_page_screen.dart';
-import 'package:random_break_timer/ui/result/result_screen.dart';
-import 'package:random_break_timer/ui/widget/custom_bottom_navigation_bar.dart';
+import 'package:random_break_timer/ui/main/main_view_model.dart';
+
 import 'package:random_break_timer/ui/widget/custom_button.dart';
 import 'package:random_break_timer/ui/widget/custom_time_text.dart';
 
 class TimerHomePage extends StatefulWidget {
+  final Function() onMyPage;
   Duration totalStudyTime;
   Duration minBreakTime;
   Duration maxBreakTime;
@@ -23,6 +20,7 @@ class TimerHomePage extends StatefulWidget {
     required this.totalStudyTime,
     required this.minBreakTime,
     required this.maxBreakTime,
+    required this.onMyPage,
   });
 
   @override
@@ -41,6 +39,7 @@ class _TimerHomePageState extends State<TimerHomePage> {
   bool _isPause = false;
   bool _isDone = false;
   List<Duration> _studyAndBreakTime = [];
+  final model = MainViewModel();
 
   Duration getTotalStudyTime() {
     List<Duration> _oddIndexedNumbers = [];
@@ -113,10 +112,10 @@ class _TimerHomePageState extends State<TimerHomePage> {
     if (_isStudying) {
       _studyAndBreakTime.add(_elapsedStudyTime);
       _elapsedStudyTime = Duration.zero;
+      _breakTime = getRandomDuration(_minBreakTime, _maxBreakTime);
     }
     _isPause = false;
     _isStudying = false;
-    _breakTime = getRandomDuration(_minBreakTime, _maxBreakTime);
     _timer = Timer.periodic(
       const Duration(seconds: 1),
       (timer) {
@@ -134,6 +133,11 @@ class _TimerHomePageState extends State<TimerHomePage> {
         }
       },
     );
+  }
+
+  String _formatDate(String date) {
+    DateTime parsedDate = DateTime.parse(date);
+    return DateFormat('yyyy-MM-dd').format(parsedDate);
   }
 
   @override
@@ -210,10 +214,8 @@ class _TimerHomePageState extends State<TimerHomePage> {
               TextButton(
                 child: Text('My page'),
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => MyPageScreen()),
-                  );
+                  Navigator.pop(context);
+                  widget.onMyPage();
                 },
               ),
             ],
@@ -285,15 +287,19 @@ class _TimerHomePageState extends State<TimerHomePage> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       _isStudying && !_isPause
-                          ? CustomButton(onPressed: () => _stop(), text: '일시정지')
-                          : CustomButton(onPressed: () => _start(), text: '시작'),
+                          ? CustomButton(
+                              onPressed: () => _stop(), text: 'Study Pause')
+                          : CustomButton(
+                              onPressed: () => _start(), text: 'Study Start'),
                       !_isStudying && !_isPause
-                          ? CustomButton(onPressed: () => _stop(), text: '일시정지')
+                          ? CustomButton(
+                              onPressed: () => _stop(),
+                              text: 'Break Time Pause')
                           : CustomButton(
                               onPressed: () => _startBreakTime(),
-                              text: '쉬는시간 시작'),
+                              text: 'Break Time Start'),
                       CustomButton(
-                        text: '공부 종료',
+                        text: 'Finish',
                         onPressed: () async {
                           _stop();
                           if (_isStudying) {
@@ -303,9 +309,9 @@ class _TimerHomePageState extends State<TimerHomePage> {
                             _studyAndBreakTime.add(_elapsedBreakTime);
                             _elapsedBreakTime = Duration.zero;
                           }
-                          await datas.add(
+                          await model.saveStudyData(
                             StudyData(
-                              date: DateTime.now().toString(),
+                              date: _formatDate(DateTime.now().toString()),
                               totalStudyTime: getTotalStudyTime().toString(),
                               targetedStudyTime:
                                   widget.totalStudyTime.toString(),
