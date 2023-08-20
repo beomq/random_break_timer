@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:random_break_timer/ui/main/main_screen.dart';
 import 'package:random_break_timer/ui/widget/custom_button.dart';
 import 'package:random_break_timer/ui/widget/custom_text_form_field.dart';
 
 class StudyTimeInputScreen extends StatefulWidget {
+  final Function(Duration, Duration, Duration) onStudyStart;
+
+  StudyTimeInputScreen({required this.onStudyStart});
+
   @override
   State<StudyTimeInputScreen> createState() => _StudyTimeInputScreenState();
 }
@@ -49,11 +52,15 @@ class _StudyTimeInputScreenState extends State<StudyTimeInputScreen> {
           width: double.infinity,
           padding: const EdgeInsets.all(20.0),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
               const Text(
-                'Welcome to Random Break Timer!',
-                style: TextStyle(fontSize: 24),
+                'Welcome to \nRandom Break Timer!',
+                style: TextStyle(
+                    fontSize: 24,
+                    fontFamily: 'MavenPro',
+                    fontWeight: FontWeight.w500),
               ),
               const SizedBox(
                 height: 30,
@@ -135,17 +142,10 @@ class _StudyTimeInputScreenState extends State<StudyTimeInputScreen> {
                         );
                         return;
                       }
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => TimerHomePage(
-                                  totalStudyTime: timeStringToSeconds(
-                                      studyTimeController.text),
-                                  minBreakTime: timeStringToSeconds(
-                                      minBreakTimeController.text),
-                                  maxBreakTime: timeStringToSeconds(
-                                      maxBreakTimeController.text),
-                                )),
+                      widget.onStudyStart(
+                        timeStringToSeconds(studyTimeController.text),
+                        timeStringToSeconds(minBreakTimeController.text),
+                        timeStringToSeconds(maxBreakTimeController.text),
                       );
                     }
                   },
