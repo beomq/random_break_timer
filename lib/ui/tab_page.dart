@@ -24,17 +24,13 @@ class _TabPageState extends State<TabPage> {
               totalStudyTime: totalStudyTime!,
               minBreakTime: minBreakTime!,
               maxBreakTime: maxBreakTime!,
-              onMyPage: () {
-                _onMyPage();
-              },
+              onMyPage: _onMyPage,
             )
           : TimerHomePage(
               totalStudyTime: Duration(),
               minBreakTime: Duration(),
               maxBreakTime: Duration(),
-              onMyPage: () {
-                _onMyPage();
-              },
+              onMyPage: _onMyPage,
             ),
       MyPageScreen()
     ];
