@@ -135,9 +135,8 @@ class _TimerHomePageState extends State<TimerHomePage> {
     );
   }
 
-  String _formatDate(String date) {
-    DateTime parsedDate = DateTime.parse(date);
-    return DateFormat('yyyy-MM-dd').format(parsedDate);
+  String _formatDate(DateTime date) {
+    return DateFormat('yyyy-MM-dd').format(date).toString();
   }
 
   @override
@@ -311,7 +310,7 @@ class _TimerHomePageState extends State<TimerHomePage> {
                           }
                           await model.saveStudyData(
                             StudyData(
-                              date: _formatDate(DateTime.now().toString()),
+                              date: _formatDate(DateTime.now()),
                               totalStudyTime: getTotalStudyTime().toString(),
                               targetedStudyTime:
                                   widget.totalStudyTime.toString(),

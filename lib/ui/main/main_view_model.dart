@@ -30,35 +30,65 @@ class MainViewModel {
 
   Duration stringToDuration(String input) {
     List<String> parts = input.split('.');
-    int milliseconds = int.parse(parts[1]);
+    int milliseconds = 0;
+    if (parts.length > 1) {
+      milliseconds = int.parse(parts[1]);
+    }
     List<String> timeParts = parts[0].split(':');
+    int hours = 0, minutes = 0, seconds = 0;
+
+    // 시:분:초 형태
+    if (timeParts.length == 3) {
+      hours = int.parse(timeParts[0]);
+      minutes = int.parse(timeParts[1]);
+      seconds = int.parse(timeParts[2]);
+    }
+    // 분:초 형태
+    else if (timeParts.length == 2) {
+      minutes = int.parse(timeParts[0]);
+      seconds = int.parse(timeParts[1]);
+    }
+    // 초 형태
+    else if (timeParts.length == 1) {
+      seconds = int.parse(timeParts[0]);
+    }
+
     return Duration(
-      hours: int.parse(timeParts[0]),
-      minutes: int.parse(timeParts[1]),
-      seconds: int.parse(timeParts[2]),
+      hours: hours,
+      minutes: minutes,
+      seconds: seconds,
       milliseconds: milliseconds,
     );
+  }
+
+  String durationToString(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, "0");
+    String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
+    String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
+    String threeDigitMilliseconds =
+        duration.inMilliseconds.remainder(1000).toString().padLeft(3, "0");
+    return "${twoDigits(duration.inHours)}:$twoDigitMinutes:$twoDigitSeconds.$threeDigitMilliseconds";
   }
 
   Future<void> saveStudyData(StudyData data) async {
     final box = await Hive.openBox<StudyData>(getUserUid());
     final existingData = box.values.where((item) => item.date == data.date);
 
-    if (existingData.isEmpty) {
+    if (existingData.isNotEmpty) {
       box.add(data);
     } else {
       final oldData = existingData.first;
       final oldDataKey = box.keyAt(box.values.toList().indexOf(oldData));
 
-      oldData.totalStudyTime = (stringToDuration(oldData.totalStudyTime) +
-              stringToDuration(data.totalStudyTime))
-          .toString();
-      oldData.targetedStudyTime = (stringToDuration(oldData.targetedStudyTime) +
-              stringToDuration(data.targetedStudyTime))
-          .toString();
-      oldData.totalBreakTime = (stringToDuration(oldData.totalBreakTime) +
-              stringToDuration(data.totalBreakTime))
-          .toString();
+      oldData.totalStudyTime = durationToString(
+          stringToDuration(oldData.totalStudyTime) +
+              stringToDuration(data.totalStudyTime));
+      oldData.targetedStudyTime = durationToString(
+          stringToDuration(oldData.targetedStudyTime) +
+              stringToDuration(data.targetedStudyTime));
+      oldData.totalBreakTime = durationToString(
+          stringToDuration(oldData.totalBreakTime) +
+              stringToDuration(data.totalBreakTime));
 
       oldData.StudyAndBreakTime.addAll(data.StudyAndBreakTime);
       box.put(oldDataKey, oldData);
