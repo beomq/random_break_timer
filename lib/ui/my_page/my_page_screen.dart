@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:random_break_timer/data/model/study_data.dart';
-import 'package:random_break_timer/main.dart';
 import 'package:random_break_timer/ui/my_page/my_page_view_model.dart';
 import 'package:random_break_timer/ui/widget/custom_button.dart';
 import 'package:random_break_timer/ui/widget/custom_recorded_container.dart';
@@ -16,7 +15,7 @@ class MyPageScreen extends StatefulWidget {
 
 class _MyPageScreenState extends State<MyPageScreen> {
   final model = MyPageViewModel();
-  late Box<StudyData> studyDataList;
+  Box<StudyData>? studyDataList;
   late List<bool> _selectedItems = [];
 
   @override
@@ -29,13 +28,15 @@ class _MyPageScreenState extends State<MyPageScreen> {
     studyDataList = await Hive.openBox<StudyData>(model.getUserUid());
     setState(() {
       _selectedItems =
-          List.generate(studyDataList.values.length, (index) => false);
+          List.generate(studyDataList!.values.length, (index) => false);
     });
   }
 
   @override
   void dispose() {
-    studyDataList.close();
+    if (studyDataList != null) {
+      studyDataList!.close();
+    }
     super.dispose();
   }
 
@@ -77,34 +78,32 @@ class _MyPageScreenState extends State<MyPageScreen> {
 
   Duration _getTotalStudyTime() {
     Duration totalStudyTime = Duration();
-    for (int i = 0; i < studyDataList.length; i++) {
-      totalStudyTime +=
-          stringToDuration(studyDataList.getAt(i)!.totalStudyTime);
+    int length = studyDataList?.length ?? 0;
+    for (int i = 0; i < length; i++) {
+      var studyData = studyDataList?.getAt(i);
+      if (studyData != null) {
+        totalStudyTime += stringToDuration(studyData.totalStudyTime);
+      }
     }
     return totalStudyTime;
   }
 
   Duration _getTotalTargetedStudyTime() {
     Duration totalTargetedStudyTime = Duration();
-    for (int i = 0; i < studyDataList.length; i++) {
-      totalTargetedStudyTime +=
-          stringToDuration(studyDataList.getAt(i)!.targetedStudyTime);
+    int length = studyDataList?.length ?? 0;
+    for (int i = 0; i < length; i++) {
+      var studyData = studyDataList?.getAt(i);
+      if (studyData != null) {
+        totalTargetedStudyTime += stringToDuration(studyData.targetedStudyTime);
+      }
     }
     return totalTargetedStudyTime;
   }
 
-  void _toggleSelection(int index) {
-    setState(() {
-      _selectedItems[index] = !_selectedItems[index];
-    });
-  }
-
   void _deleteSelectedItems() {
     setState(() {
-      for (int i = studyDataList.length - 1; i >= 0; i--) {
-        if (_selectedItems[i]) {
-          _selectedItems.removeAt(i);
-        }
+      for (int i = studyDataList!.length - 1; i >= 0; i--) {
+        model.allDelete();
       }
     });
   }
@@ -135,34 +134,27 @@ class _MyPageScreenState extends State<MyPageScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 CustomRecordedContainer(
-                    iconData: Icons.access_time,
+                    iconData: Icons.note_outlined,
                     resultText: _getTotalStudyTime().toString().split('.')[0],
                     detailText: '총 공부 시간'),
                 CustomRecordedContainer(
-                    iconData: Icons.access_time,
+                    iconData: Icons.emoji_events_outlined,
                     resultText:
                         '${(_getTotalStudyTime().inSeconds / _getTotalTargetedStudyTime().inSeconds * 100).toStringAsFixed(2)} %',
                     detailText: '총 목표 달성율'),
                 CustomRecordedContainer(
-                    iconData: Icons.access_time,
-                    resultText: '${studyDataList.length}일',
+                    iconData: Icons.hotel_class_outlined,
+                    resultText: '${studyDataList?.length ?? 0}일',
                     detailText: '공부 시작한지'),
               ],
             ),
           ),
+          Text('지난날의 기록'),
           Expanded(
             child: ListView.builder(
-              itemCount: studyDataList.length,
+              itemCount: studyDataList?.length ?? 0,
               itemBuilder: (context, index) {
-                StudyData studyData = studyDataList.getAt(index)!;
-                Duration parseDuration(String duration) {
-                  List<String> parts = duration.split(':');
-                  return Duration(
-                    hours: double.parse(parts[0]).toInt(),
-                    minutes: double.parse(parts[1]).toInt(),
-                    seconds: double.parse(parts[2]).toInt(),
-                  );
-                }
+                StudyData studyData = studyDataList!.getAt(index)!;
 
                 Duration targetedDuration =
                     stringToDuration(studyData.targetedStudyTime);
@@ -170,41 +162,58 @@ class _MyPageScreenState extends State<MyPageScreen> {
                     stringToDuration(studyData.totalStudyTime);
                 double achievementRate =
                     totalDuration.inSeconds / targetedDuration.inSeconds * 100;
-                return ExpansionTile(
-                  title: Text(_formatDate(studyData.date)),
-                  children: [
-                    ListTile(
-                      title: Text(
-                          '목표 공부 시간: ${_formatTime(studyData.targetedStudyTime.toString())}'),
-                    ),
-                    ListTile(
-                      title: Text(
-                          '총 공부 시간: ${_formatTime(studyData.totalStudyTime.toString())}'),
-                    ),
-                    ListTile(
-                      title: Text(
-                          '총 쉬는 시간: ${_formatTime(studyData.totalBreakTime.toString())}'),
-                    ),
-                    ListTile(
-                      title: Text(
-                          '목표 달성률: ${achievementRate.toStringAsFixed(2)}%'),
-                    ),
-                    ExpansionTile(
-                      title: const Text('Study and Break Time'),
-                      children: List<Widget>.generate(
-                          studyData.StudyAndBreakTime.length ~/ 2, (int index) {
-                        Duration studyDuration =
-                            studyData.StudyAndBreakTime[index * 2];
-                        Duration breakDuration =
-                            studyData.StudyAndBreakTime[index * 2 + 1];
-                        return ListTile(
-                          title: Text(
-                            '${index + 1}. 공부 시간: ${_formatDuration(studyDuration)} 쉬는 시간: ${_formatDuration(breakDuration)}',
-                          ),
-                        );
-                      }),
-                    ),
-                  ],
+                return Dismissible(
+                  key: Key(studyData.date.toString()),
+                  onDismissed: (direction) {
+                    // 삭제 로직
+
+                    model.deleteItemAtIndex(index);
+                    // 스낵바 메시지
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(SnackBar(content: Text('항목이 삭제되었습니다.')));
+                    setState(() {});
+                  },
+                  background: Container(
+                    color: Colors.red,
+                    child: Icon(Icons.delete, color: Colors.white),
+                  ),
+                  child: ExpansionTile(
+                    title: Text(_formatDate(studyData.date)),
+                    children: [
+                      ListTile(
+                        title: Text(
+                            '목표 공부 시간: ${_formatTime(studyData.targetedStudyTime.toString())}'),
+                      ),
+                      ListTile(
+                        title: Text(
+                            '총 공부 시간: ${_formatTime(studyData.totalStudyTime.toString())}'),
+                      ),
+                      ListTile(
+                        title: Text(
+                            '총 쉬는 시간: ${_formatTime(studyData.totalBreakTime.toString())}'),
+                      ),
+                      ListTile(
+                        title: Text(
+                            '목표 달성률: ${achievementRate.toStringAsFixed(2)}%'),
+                      ),
+                      ExpansionTile(
+                        title: const Text('Study and Break Time'),
+                        children: List<Widget>.generate(
+                            studyData.StudyAndBreakTime.length ~/ 2,
+                            (int index) {
+                          Duration studyDuration =
+                              studyData.StudyAndBreakTime[index * 2];
+                          Duration breakDuration =
+                              studyData.StudyAndBreakTime[index * 2 + 1];
+                          return ListTile(
+                            title: Text(
+                              '${index + 1}. 공부 시간: ${_formatDuration(studyDuration)} 쉬는 시간: ${_formatDuration(breakDuration)}',
+                            ),
+                          );
+                        }),
+                      ),
+                    ],
+                  ),
                 );
               },
             ),
