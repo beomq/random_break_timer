@@ -1,8 +1,8 @@
 import 'dart:async';
-import 'dart:math';
-import 'package:intl/intl.dart';
+
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:random_break_timer/core/status.dart';
 import 'package:random_break_timer/data/model/study_data.dart';
 import 'package:random_break_timer/ui/main/main_view_model.dart';
 
@@ -35,11 +35,11 @@ class _TimerHomePageState extends State<TimerHomePage> {
   late Duration _breakTime;
   Duration _elapsedStudyTime = Duration.zero;
   Duration _elapsedBreakTime = Duration.zero;
-  bool _isStudying = false;
+
   bool _isPause = false;
-  bool _isDone = false;
   List<Duration> _studyAndBreakTime = [];
   final model = MainViewModel();
+  StudyStatus currentStatus = StudyStatus.finished;
 
   Duration getTotalStudyTime() {
     List<Duration> _oddIndexedNumbers = [];
@@ -73,13 +73,14 @@ class _TimerHomePageState extends State<TimerHomePage> {
   }
 
   void _start() {
-    if (!_isStudying && _studyAndBreakTime.isNotEmpty) {
+    if (currentStatus == StudyStatus.breakTime &&
+        _studyAndBreakTime.isNotEmpty) {
       _timer?.cancel();
       _studyAndBreakTime.add(_elapsedBreakTime);
       _elapsedBreakTime = Duration.zero;
     }
     _isPause = false;
-    _isStudying = true;
+    currentStatus = StudyStatus.studying;
     _timer = Timer.periodic(
       const Duration(seconds: 1),
       (timer) {
@@ -99,23 +100,15 @@ class _TimerHomePageState extends State<TimerHomePage> {
     setState(() {});
   }
 
-  Duration getRandomDuration(Duration min, Duration max) {
-    final random = Random();
-    int range = max.inSeconds - min.inSeconds;
-
-    int randomSeconds = random.nextInt(range + 1);
-    return min + Duration(seconds: randomSeconds);
-  }
-
   void _startBreakTime() {
     _timer?.cancel();
-    if (_isStudying) {
+    if (currentStatus == StudyStatus.studying) {
       _studyAndBreakTime.add(_elapsedStudyTime);
       _elapsedStudyTime = Duration.zero;
-      _breakTime = getRandomDuration(_minBreakTime, _maxBreakTime);
+      _breakTime = model.getRandomDuration(_minBreakTime, _maxBreakTime);
     }
     _isPause = false;
-    _isStudying = false;
+    currentStatus = StudyStatus.breakTime;
     _timer = Timer.periodic(
       const Duration(seconds: 1),
       (timer) {
@@ -135,31 +128,8 @@ class _TimerHomePageState extends State<TimerHomePage> {
     );
   }
 
-  String _formatDate(DateTime date) {
-    return DateFormat('yyyy-MM-dd').format(date).toString();
-  }
-
   @override
   Widget build(BuildContext context) {
-    String durationToString(Duration duration) {
-      String twoDigits(int n) => n.toString().padLeft(2, "0");
-      String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
-      String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
-      return "${twoDigits(duration.inHours)}:$twoDigitMinutes:$twoDigitSeconds";
-    }
-
-    String _formatDuration(Duration duration) {
-      String twoDigits(int n) => n.toString().padLeft(2, "0");
-      String hours =
-          duration.inHours != 0 ? "${twoDigits(duration.inHours)} : " : "";
-      String minutes = duration.inMinutes != 0
-          ? "${twoDigits(duration.inMinutes.remainder(60))} : "
-          : '';
-      String seconds = "${twoDigits(duration.inSeconds.remainder(60))}";
-
-      return hours + minutes + seconds;
-    }
-
     Column _buildStudyBreakPairs() {
       List<Widget> tiles = [];
 
@@ -170,7 +140,7 @@ class _TimerHomePageState extends State<TimerHomePage> {
         tiles.add(
           ListTile(
             title: Text(
-              '${(i / 2 + 1).toInt()}. 공부: ${_formatDuration(studyDuration)} 휴식: ${_formatDuration(breakDuration)}',
+              '${(i / 2 + 1).toInt()}. 공부: ${model.formatDuration(studyDuration)} 휴식: ${model.formatDuration(breakDuration)}',
             ),
           ),
         );
@@ -180,32 +150,29 @@ class _TimerHomePageState extends State<TimerHomePage> {
     }
 
     final num goalAchievement =
-        (getTotalStudyTime().inSeconds / widget.totalStudyTime.inSeconds * 100);
+        (getTotalStudyTime().inSeconds / widget.totalStudyTime.inSeconds * 100)
+            .roundToDouble();
 
     void _showDialog(BuildContext context) {
       showDialog(
         context: context,
         builder: (BuildContext context) {
-          String lottieAsset;
-          if (goalAchievement >= 100) {
-            lottieAsset = 'assets/100.json';
-          } else if (goalAchievement >= 75) {
-            lottieAsset = 'assets/80.json';
-          } else if (goalAchievement >= 50) {
-            lottieAsset = 'assets/60.json';
-          } else {
-            lottieAsset = 'assets/40.json';
-          }
           return AlertDialog(
             title: Text('목표 달성도'),
             content: SingleChildScrollView(
               child: Column(
                 children: [
-                  Lottie.asset(lottieAsset,
+                  Lottie.asset('assets/finish.json',
                       width: 200, height: 200, fit: BoxFit.cover),
-                  Text('$goalAchievement %'),
-                  Text(widget.totalStudyTime.toString()),
-                  Text(getTotalStudyTime().inSeconds.toString()),
+                  goalAchievement.isNaN
+                      ? Text(
+                          '0%',
+                          style: TextStyle(fontSize: 20),
+                        )
+                      : Text(
+                          '$goalAchievement %',
+                          style: TextStyle(fontSize: 20),
+                        ),
                 ],
               ),
             ),
@@ -249,33 +216,49 @@ class _TimerHomePageState extends State<TimerHomePage> {
                     ),
                     child: Column(
                       children: [
-                        _isStudying
-                            ? Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Lottie.asset('assets/study.json',
-                                      height: 200, fit: BoxFit.cover),
-                                  const SizedBox(
-                                    height: 30,
-                                  ),
-                                ],
-                              )
-                            : Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Lottie.asset('assets/breaktime.json',
-                                      height: 200, fit: BoxFit.cover),
-                                  const SizedBox(
-                                    height: 30,
-                                  ),
-                                ],
-                              ),
-                        _isStudying
-                            ? CustomTimeText(time: _time)
-                            : CustomTimeText(time: _breakTime),
-                        const SizedBox(
-                          height: 30,
-                        ),
+                        if (currentStatus == StudyStatus.studying)
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Lottie.asset('assets/study.json',
+                                  height: 200, fit: BoxFit.cover),
+                              const SizedBox(height: 30),
+                            ],
+                          )
+                        else if (currentStatus == StudyStatus.breakTime)
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Lottie.asset('assets/breaktime.json',
+                                  height: 200, fit: BoxFit.cover),
+                              const SizedBox(height: 30),
+                            ],
+                          )
+                        else if (currentStatus == StudyStatus.initial)
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Lottie.asset('assets/study.json',
+                                  height: 200, fit: BoxFit.cover),
+                              const SizedBox(height: 30),
+                            ],
+                          )
+                        else
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Lottie.asset('assets/study.json',
+                                  height: 200, fit: BoxFit.cover),
+                              const SizedBox(height: 30),
+                            ],
+                          ),
+                        if (currentStatus != StudyStatus.initial &&
+                            currentStatus != StudyStatus.finished)
+                          CustomTimeText(
+                              time: currentStatus == StudyStatus.studying
+                                  ? _time
+                                  : _breakTime),
+                        const SizedBox(height: 30),
                       ],
                     ),
                   ),
@@ -285,12 +268,12 @@ class _TimerHomePageState extends State<TimerHomePage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _isStudying && !_isPause
+                      currentStatus == StudyStatus.studying && !_isPause
                           ? CustomButton(
                               onPressed: () => _stop(), text: 'Study Pause')
                           : CustomButton(
                               onPressed: () => _start(), text: 'Study Start'),
-                      !_isStudying && !_isPause
+                      currentStatus == StudyStatus.breakTime && !_isPause
                           ? CustomButton(
                               onPressed: () => _stop(),
                               text: 'Break Time Pause')
@@ -301,16 +284,17 @@ class _TimerHomePageState extends State<TimerHomePage> {
                         text: 'Finish',
                         onPressed: () async {
                           _stop();
-                          if (_isStudying) {
+                          if (currentStatus == StudyStatus.studying) {
                             _studyAndBreakTime.add(_elapsedStudyTime);
                             _elapsedStudyTime = Duration.zero;
                           } else {
                             _studyAndBreakTime.add(_elapsedBreakTime);
                             _elapsedBreakTime = Duration.zero;
                           }
+                          currentStatus == StudyStatus.finished;
                           await model.saveStudyData(
                             StudyData(
-                              date: _formatDate(DateTime.now()),
+                              date: model.formatDate(DateTime.now()),
                               totalStudyTime: getTotalStudyTime().toString(),
                               targetedStudyTime:
                                   widget.totalStudyTime.toString(),
@@ -321,7 +305,7 @@ class _TimerHomePageState extends State<TimerHomePage> {
 
                           _showDialog(context);
                         },
-                      )
+                      ),
                     ],
                   ),
                   SizedBox(
