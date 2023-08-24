@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:random_break_timer/data/model/study_data.dart';
+import 'package:intl/intl.dart';
 
 class MainViewModel {
   bool isPause = false;
@@ -74,7 +76,7 @@ class MainViewModel {
     final box = await Hive.openBox<StudyData>(getUserUid());
     final existingData = box.values.where((item) => item.date == data.date);
 
-    if (existingData.isNotEmpty) {
+    if (existingData.isEmpty) {
       box.add(data);
     } else {
       final oldData = existingData.first;
@@ -93,5 +95,29 @@ class MainViewModel {
       oldData.StudyAndBreakTime.addAll(data.StudyAndBreakTime);
       box.put(oldDataKey, oldData);
     }
+  }
+
+  Duration getRandomDuration(Duration min, Duration max) {
+    final random = Random();
+    int range = max.inSeconds - min.inSeconds;
+
+    int randomSeconds = random.nextInt(range + 1);
+    return min + Duration(seconds: randomSeconds);
+  }
+
+  String formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, "0");
+    String hours =
+        duration.inHours != 0 ? "${twoDigits(duration.inHours)} : " : "";
+    String minutes = duration.inMinutes != 0
+        ? "${twoDigits(duration.inMinutes.remainder(60))} : "
+        : '';
+    String seconds = twoDigits(duration.inSeconds.remainder(60));
+
+    return hours + minutes + seconds;
+  }
+
+  String formatDate(DateTime date) {
+    return DateFormat('yyyy-MM-dd').format(date).toString();
   }
 }
