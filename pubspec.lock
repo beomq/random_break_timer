@@ -553,10 +553,10 @@ packages:
     dependency: "direct main"
     description:
       name: go_router
-      sha256: b3cadd2cd59a4103fd5f6bc572ca75111264698784e927aa471921c3477d5475
+      sha256: "2aa884667eeda3a1c461f31e72af1f77984ab0f29450d8fb12ec1f7bc53eea14"
       url: "https://pub.dev"
     source: hosted
-    version: "10.0.0"
+    version: "10.1.0"
   google_sign_in:
     dependency: "direct main"
     description:
@@ -657,10 +657,10 @@ packages:
     dependency: "direct main"
     description:
       name: injectable
-      sha256: fbe4b673f8c344e03eb4ab50fa853405872f401bbf6a7ba84b2b7447ac81ed1b
+      sha256: "5217c45fec809286a7b1b4fbcbd70aab1662bf18d9eb207490df421323f7883f"
       url: "https://pub.dev"
     source: hosted
-    version: "2.1.2"
+    version: "2.3.0"
   intl:
     dependency: transitive
     description:
