@@ -8,6 +8,7 @@ class CustomButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    num deviceWidth = MediaQuery.of(context).size.width;
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
@@ -27,8 +28,8 @@ class CustomButton extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
         child: Text(
           text,
-          style: const TextStyle(
-            fontSize: 14,
+          style: TextStyle(
+            fontSize: deviceWidth < 380 ? 9 : 14,
             color: Color(0xff072f71),
           ),
         ),
