@@ -82,8 +82,7 @@ class MainViewModel {
       final oldData = existingData.first;
       final oldDataKey = box.keyAt(box.values.toList().indexOf(oldData));
 
-      oldData.targetedStudyTime =
-          durationToString(stringToDuration(data.targetedStudyTime));
+      oldData.targetedStudyTime = data.targetedStudyTime;
       oldData.totalStudyTime = durationToString(
           stringToDuration(oldData.totalStudyTime) +
               stringToDuration(data.totalStudyTime));

@@ -138,11 +138,8 @@ class _MyPageScreenState extends State<MyPageScreen> {
                       return Dismissible(
                         key: Key(studyData.date.toString()),
                         onDismissed: (direction) {
-                          // 삭제 로직
-
                           model.deleteItemAtIndex(index);
                           studyDataNotifier.value = studyDataNotifier.value;
-                          // 스낵바 메시지
                           ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(content: Text('항목이 삭제되었습니다.')));
                           setState(() {});
