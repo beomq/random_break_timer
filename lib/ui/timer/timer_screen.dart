@@ -293,7 +293,6 @@ class _TimerScreenState extends State<TimerScreen> {
                               text: 'Finish',
                               onPressed: () async {
                                 _stop();
-                                _showDialog(context);
                                 if (currentStatus == StudyStatus.studying) {
                                   studyAndBreakTime.add(_elapsedStudyTime);
                                   _elapsedStudyTime = Duration.zero;
@@ -302,6 +301,7 @@ class _TimerScreenState extends State<TimerScreen> {
                                   studyAndBreakTime.add(_elapsedBreakTime);
                                   _elapsedBreakTime = Duration.zero;
                                 }
+                                _showDialog(context);
                                 currentStatus = StudyStatus.initial;
                                 await model.saveStudyData(
                                   StudyData(
@@ -315,8 +315,7 @@ class _TimerScreenState extends State<TimerScreen> {
                                     studyAndBreakTime: studyAndBreakTime,
                                   ),
                                 );
-                              },
-                            ),
+                              }),
                     ],
                   ),
                   const SizedBox(
