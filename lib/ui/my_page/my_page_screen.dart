@@ -15,6 +15,9 @@ class MyPageScreen extends StatefulWidget {
 class _MyPageScreenState extends State<MyPageScreen> {
   final model = MyPageViewModel();
   Box<StudyData>? studyDataList;
+  ValueNotifier<Box<StudyData>?> studyDataNotifier =
+      ValueNotifier<Box<StudyData>?>(null);
+
   late List<bool> _selectedItems = [];
 
   @override
@@ -24,10 +27,10 @@ class _MyPageScreenState extends State<MyPageScreen> {
   }
 
   Future<void> _initHive() async {
-    studyDataList = await Hive.openBox<StudyData>(model.getUserUid());
+    var box = await Hive.openBox<StudyData>(model.getUserUid());
+    studyDataNotifier.value = box;
     setState(() {
-      _selectedItems =
-          List.generate(studyDataList!.values.length, (index) => false);
+      _selectedItems = List.generate(box.values.length, (index) => false);
     });
   }
 
@@ -41,9 +44,9 @@ class _MyPageScreenState extends State<MyPageScreen> {
 
   Duration _getTotalStudyTime() {
     Duration totalStudyTime = Duration();
-    int length = studyDataList?.length ?? 0;
+    int length = studyDataNotifier.value?.length ?? 0;
     for (int i = 0; i < length; i++) {
-      var studyData = studyDataList?.getAt(i);
+      var studyData = studyDataNotifier.value?.getAt(i);
       if (studyData != null) {
         totalStudyTime += model.stringToDuration(studyData.totalStudyTime);
       }
@@ -53,9 +56,9 @@ class _MyPageScreenState extends State<MyPageScreen> {
 
   Duration _getTotalTargetedStudyTime() {
     Duration totalTargetedStudyTime = Duration();
-    int length = studyDataList?.length ?? 0;
+    int length = studyDataNotifier.value?.length ?? 0;
     for (int i = 0; i < length; i++) {
-      var studyData = studyDataList?.getAt(i);
+      var studyData = studyDataNotifier.value?.getAt(i);
       if (studyData != null) {
         totalTargetedStudyTime +=
             model.stringToDuration(studyData.targetedStudyTime);
@@ -65,142 +68,150 @@ class _MyPageScreenState extends State<MyPageScreen> {
   }
 
   void _deleteSelectedItems() {
-    setState(() {
-      for (int i = studyDataList!.length - 1; i >= 0; i--) {
-        model.allDelete();
-      }
-    });
+    for (int i = studyDataNotifier.value!.length - 1; i >= 0; i--) {
+      model.allDelete();
+    }
+    studyDataNotifier.notifyListeners();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        body: SafeArea(
-      child: Column(
-        children: [
-          Row(
-            children: [
-              CircleAvatar(
-                backgroundImage: NetworkImage(model.getProfileImageUrl()),
-              ),
-              Column(
-                children: [
-                  Text('Profile'),
-                  Text(model.getNickname()),
-                ],
-              )
-            ],
-          ),
-          Text('Study Recorded'),
-          Container(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    return ValueListenableBuilder<Box<StudyData>?>(
+        valueListenable: studyDataNotifier,
+        builder: (context, box, child) {
+          return Scaffold(
+              body: SafeArea(
+            child: Column(
               children: [
-                CustomRecordedContainer(
-                    iconData: Icons.note_outlined,
-                    resultText: _getTotalStudyTime().toString().split('.')[0],
-                    detailText: '총 공부 시간'),
-                CustomRecordedContainer(
-                    iconData: Icons.emoji_events_outlined,
-                    resultText:
-                        '${(_getTotalStudyTime().inSeconds / _getTotalTargetedStudyTime().inSeconds * 100).toStringAsFixed(2)} %',
-                    detailText: '총 목표 달성율'),
-                CustomRecordedContainer(
-                    iconData: Icons.hotel_class_outlined,
-                    resultText: '${studyDataList?.length ?? 0}일',
-                    detailText: '공부 시작한지'),
-              ],
-            ),
-          ),
-          Text('지난날의 기록'),
-          Expanded(
-            child: ListView.builder(
-              itemCount: studyDataList?.length ?? 0,
-              itemBuilder: (context, index) {
-                StudyData studyData = studyDataList!.getAt(index)!;
-
-                Duration targetedDuration =
-                    model.stringToDuration(studyData.targetedStudyTime);
-                Duration totalDuration =
-                    model.stringToDuration(studyData.totalStudyTime);
-                double achievementRate =
-                    totalDuration.inSeconds / targetedDuration.inSeconds * 100;
-                return Dismissible(
-                  key: Key(studyData.date.toString()),
-                  onDismissed: (direction) {
-                    // 삭제 로직
-
-                    model.deleteItemAtIndex(index);
-                    // 스낵바 메시지
-                    ScaffoldMessenger.of(context)
-                        .showSnackBar(SnackBar(content: Text('항목이 삭제되었습니다.')));
-                    setState(() {});
-                  },
-                  background: Container(
-                    color: Colors.red,
-                    child: Icon(Icons.delete, color: Colors.white),
-                  ),
-                  child: ExpansionTile(
-                    title: Text(model.formatDate(studyData.date)),
+                Row(
+                  children: [
+                    CircleAvatar(
+                      backgroundImage: NetworkImage(model.getProfileImageUrl()),
+                    ),
+                    Column(
+                      children: [
+                        Text('Profile'),
+                        Text(model.getNickname()),
+                      ],
+                    )
+                  ],
+                ),
+                Text('Study Recorded'),
+                Container(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      ListTile(
-                        title: Text(
-                            '목표 공부 시간: ${model.formatTime(studyData.targetedStudyTime.toString())}'),
-                      ),
-                      ListTile(
-                        title: Text(
-                            '총 공부 시간: ${model.formatTime(studyData.totalStudyTime.toString())}'),
-                      ),
-                      ListTile(
-                        title: Text(
-                            '총 쉬는 시간: ${model.formatTime(studyData.totalBreakTime.toString())}'),
-                      ),
-                      ListTile(
-                        title: Text(
-                            '목표 달성률: ${achievementRate.toStringAsFixed(2)}%'),
-                      ),
-                      ExpansionTile(
-                        title: const Text('Study and Break Time'),
-                        children: List<Widget>.generate(
-                            studyData.StudyAndBreakTime.length ~/ 2,
-                            (int index) {
-                          Duration studyDuration =
-                              studyData.StudyAndBreakTime[index * 2];
-                          Duration breakDuration =
-                              studyData.StudyAndBreakTime[index * 2 + 1];
-                          return ListTile(
-                            title: Text(
-                              '${index + 1}. 공부 시간: ${model.formatDuration(studyDuration)} 쉬는 시간: ${model.formatDuration(breakDuration)}',
+                      CustomRecordedContainer(
+                          iconData: Icons.note_outlined,
+                          resultText:
+                              _getTotalStudyTime().toString().split('.')[0],
+                          detailText: '총 공부 시간'),
+                      CustomRecordedContainer(
+                          iconData: Icons.emoji_events_outlined,
+                          resultText:
+                              '${(_getTotalStudyTime().inSeconds / _getTotalTargetedStudyTime().inSeconds * 100).toStringAsFixed(2)} %',
+                          detailText: '총 목표 달성율'),
+                      CustomRecordedContainer(
+                          iconData: Icons.hotel_class_outlined,
+                          resultText:
+                              '${studyDataNotifier.value?.length ?? 0}일',
+                          detailText: '공부 시작한지'),
+                    ],
+                  ),
+                ),
+                Text('지난날의 기록'),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: studyDataNotifier.value?.length ?? 0,
+                    itemBuilder: (context, index) {
+                      StudyData studyData =
+                          studyDataNotifier.value!.getAt(index)!;
+
+                      Duration targetedDuration =
+                          model.stringToDuration(studyData.targetedStudyTime);
+                      Duration totalDuration =
+                          model.stringToDuration(studyData.totalStudyTime);
+                      double achievementRate = totalDuration.inSeconds /
+                          targetedDuration.inSeconds *
+                          100;
+                      return Dismissible(
+                        key: Key(studyData.date.toString()),
+                        onDismissed: (direction) {
+                          // 삭제 로직
+
+                          model.deleteItemAtIndex(index);
+                          studyDataNotifier.value = studyDataNotifier.value;
+                          // 스낵바 메시지
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('항목이 삭제되었습니다.')));
+                          setState(() {});
+                        },
+                        background: Container(
+                          color: Colors.red,
+                          child: Icon(Icons.delete, color: Colors.white),
+                        ),
+                        child: ExpansionTile(
+                          title: Text(model.formatDate(studyData.date)),
+                          children: [
+                            ListTile(
+                              title: Text(
+                                  '목표 공부 시간: ${model.formatTime(studyData.targetedStudyTime.toString())}'),
                             ),
-                          );
-                        }),
+                            ListTile(
+                              title: Text(
+                                  '총 공부 시간: ${model.formatTime(studyData.totalStudyTime.toString())}'),
+                            ),
+                            ListTile(
+                              title: Text(
+                                  '총 쉬는 시간: ${model.formatTime(studyData.totalBreakTime.toString())}'),
+                            ),
+                            ListTile(
+                              title: Text(
+                                  '목표 달성률: ${achievementRate.toStringAsFixed(2)}%'),
+                            ),
+                            ExpansionTile(
+                              title: const Text('Study and Break Time'),
+                              children: List<Widget>.generate(
+                                  studyData.studyAndBreakTime.length ~/ 2,
+                                  (int index) {
+                                Duration studyDuration =
+                                    studyData.studyAndBreakTime[index * 2];
+                                Duration breakDuration =
+                                    studyData.studyAndBreakTime[index * 2 + 1];
+                                return ListTile(
+                                  title: Text(
+                                    '${index + 1}. 공부 시간: ${model.formatDuration(studyDuration)} 쉬는 시간: ${model.formatDuration(breakDuration)}',
+                                  ),
+                                );
+                              }),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    children: [
+                      CustomButton(
+                        text: '선택 삭제',
+                        onPressed: _deleteSelectedItems,
+                      ),
+                      CustomButton(
+                        text: 'LOGOUT',
+                        onPressed: () {
+                          model.logout();
+                        },
                       ),
                     ],
                   ),
-                );
-              },
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              children: [
-                CustomButton(
-                  text: '선택 삭제',
-                  onPressed: _deleteSelectedItems,
-                ),
-                CustomButton(
-                  text: 'LOGOUT',
-                  onPressed: () {
-                    model.logout();
-                  },
                 ),
               ],
             ),
-          ),
-        ],
-      ),
-    ));
+          ));
+        });
   }
 }
