@@ -39,7 +39,7 @@ class _TimerHomePageState extends State<TimerHomePage> {
   bool _isPause = false;
   List<Duration> _studyAndBreakTime = [];
   final model = MainViewModel();
-  StudyStatus currentStatus = StudyStatus.finished;
+  StudyStatus currentStatus = StudyStatus.initial;
 
   Duration getTotalStudyTime() {
     List<Duration> _oddIndexedNumbers = [];
@@ -239,7 +239,7 @@ class _TimerHomePageState extends State<TimerHomePage> {
                           Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Lottie.asset('assets/study.json',
+                              Lottie.asset('assets/finish2.json',
                                   height: 200, fit: BoxFit.cover),
                               const SizedBox(height: 30),
                             ],
@@ -274,13 +274,16 @@ class _TimerHomePageState extends State<TimerHomePage> {
                               onPressed: () => _stop(), text: 'Study Pause')
                           : CustomButton(
                               onPressed: () => _start(), text: 'Study Start'),
-                      currentStatus == StudyStatus.breakTime && !_isPause
+                      currentStatus == StudyStatus.initial
                           ? CustomButton(
-                              onPressed: () => _stop(),
-                              text: 'Break Time Pause')
-                          : CustomButton(
-                              onPressed: () => _startBreakTime(),
-                              text: 'Break Time Start'),
+                              onPressed: (null), text: '◀️ Click Here')
+                          : currentStatus == StudyStatus.breakTime && !_isPause
+                              ? CustomButton(
+                                  onPressed: () => _stop(),
+                                  text: 'Break Time Pause')
+                              : CustomButton(
+                                  onPressed: () => _startBreakTime(),
+                                  text: 'Break Time Start'),
                       CustomButton(
                         text: 'Finish',
                         onPressed: () async {
