@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:random_break_timer/ui/input/study_time_input_screen.dart';
-import 'package:random_break_timer/ui/main/main_screen.dart';
+import 'package:random_break_timer/ui/timer/timer_screen.dart';
 import 'package:random_break_timer/ui/my_page/my_page_screen.dart';
 
 class TabPage extends StatefulWidget {
@@ -20,13 +20,13 @@ class _TabPageState extends State<TabPage> {
     return [
       StudyTimeInputScreen(onStudyStart: _onStudyStart),
       (totalStudyTime != null && minBreakTime != null && maxBreakTime != null)
-          ? TimerHomePage(
+          ? TimerScreen(
               totalStudyTime: totalStudyTime!,
               minBreakTime: minBreakTime!,
               maxBreakTime: maxBreakTime!,
               onMyPage: _onMyPage,
             )
-          : TimerHomePage(
+          : TimerScreen(
               totalStudyTime: Duration(),
               minBreakTime: Duration(),
               maxBreakTime: Duration(),

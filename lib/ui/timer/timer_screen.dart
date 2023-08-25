@@ -4,18 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:random_break_timer/core/status.dart';
 import 'package:random_break_timer/data/model/study_data.dart';
-import 'package:random_break_timer/ui/main/main_view_model.dart';
+import 'package:random_break_timer/ui/timer/timer_view_model.dart';
 
 import 'package:random_break_timer/ui/widget/custom_button.dart';
 import 'package:random_break_timer/ui/widget/custom_time_text.dart';
 
-class TimerHomePage extends StatefulWidget {
+class TimerScreen extends StatefulWidget {
   final Function() onMyPage;
   Duration totalStudyTime;
   Duration minBreakTime;
   Duration maxBreakTime;
 
-  TimerHomePage({
+  TimerScreen({
     super.key,
     required this.totalStudyTime,
     required this.minBreakTime,
@@ -24,10 +24,10 @@ class TimerHomePage extends StatefulWidget {
   });
 
   @override
-  _TimerHomePageState createState() => _TimerHomePageState();
+  _TimerScreenState createState() => _TimerScreenState();
 }
 
-class _TimerHomePageState extends State<TimerHomePage> {
+class _TimerScreenState extends State<TimerScreen> {
   Timer? _timer;
   late Duration _time;
   late Duration _minBreakTime;
@@ -37,33 +37,33 @@ class _TimerHomePageState extends State<TimerHomePage> {
   Duration _elapsedBreakTime = Duration.zero;
 
   bool _isPause = false;
-  List<Duration> _studyAndBreakTime = [];
-  final model = MainViewModel();
+  List<Duration> studyAndBreakTime = [];
+  final model = TimerViewModel();
   StudyStatus currentStatus = StudyStatus.initial;
 
   Duration getTotalStudyTime() {
-    List<Duration> _oddIndexedNumbers = [];
-    for (int i = 0; i < _studyAndBreakTime.length; i += 2) {
-      _oddIndexedNumbers.add(_studyAndBreakTime[i]);
+    List<Duration> studyTimes = [];
+    for (int i = 0; i < studyAndBreakTime.length; i += 2) {
+      studyTimes.add(studyAndBreakTime[i]);
     }
-    if (_oddIndexedNumbers.isEmpty) {
+    if (studyTimes.isEmpty) {
       return Duration.zero;
     }
-    if (_oddIndexedNumbers.length == 1) {
-      return _oddIndexedNumbers[0];
+    if (studyTimes.length == 1) {
+      return Duration(seconds: studyTimes.length);
     }
-    return _oddIndexedNumbers.reduce((a, b) => a + b);
+    return studyTimes.reduce((a, b) => a + b);
   }
 
   Duration getTotalBreakTime() {
-    List<Duration> _breakIndexedNumbers = [];
-    for (int i = 1; i < _studyAndBreakTime.length; i += 2) {
-      _breakIndexedNumbers.add(_studyAndBreakTime[i]);
+    List<Duration> breakTimes = [];
+    for (int i = 1; i < studyAndBreakTime.length; i += 2) {
+      breakTimes.add(studyAndBreakTime[i]);
     }
-    if (_breakIndexedNumbers.isEmpty) {
+    if (breakTimes.isEmpty) {
       return Duration.zero;
     }
-    return _breakIndexedNumbers.reduce((a, b) => a + b);
+    return breakTimes.reduce((a, b) => a + b);
   }
 
   @override
@@ -77,9 +77,9 @@ class _TimerHomePageState extends State<TimerHomePage> {
 
   void _start() {
     if (currentStatus == StudyStatus.breakTime &&
-        _studyAndBreakTime.isNotEmpty) {
+        studyAndBreakTime.isNotEmpty) {
       _timer?.cancel();
-      _studyAndBreakTime.add(_elapsedBreakTime);
+      studyAndBreakTime.add(_elapsedBreakTime);
       _elapsedBreakTime = Duration.zero;
     }
     _isPause = false;
@@ -91,7 +91,7 @@ class _TimerHomePageState extends State<TimerHomePage> {
           _elapsedStudyTime += const Duration(seconds: 1);
         });
       } else {
-        _studyAndBreakTime.add(_elapsedStudyTime);
+        studyAndBreakTime.add(_elapsedStudyTime);
         _elapsedStudyTime = Duration.zero;
         _timer?.cancel();
       }
@@ -107,7 +107,7 @@ class _TimerHomePageState extends State<TimerHomePage> {
   void _startBreakTime() {
     _timer?.cancel();
     if (currentStatus == StudyStatus.studying) {
-      _studyAndBreakTime.add(_elapsedStudyTime);
+      studyAndBreakTime.add(_elapsedStudyTime);
       _elapsedStudyTime = Duration.zero;
       _breakTime = model.getRandomDuration(_minBreakTime, _maxBreakTime);
     }
@@ -137,9 +137,9 @@ class _TimerHomePageState extends State<TimerHomePage> {
     Column _buildStudyBreakPairs() {
       List<Widget> tiles = [];
 
-      for (int i = 0; i < _studyAndBreakTime.length - 1; i += 2) {
-        Duration studyDuration = _studyAndBreakTime[i];
-        Duration breakDuration = _studyAndBreakTime[i + 1];
+      for (int i = 0; i < studyAndBreakTime.length - 1; i += 2) {
+        Duration studyDuration = studyAndBreakTime[i];
+        Duration breakDuration = studyAndBreakTime[i + 1];
 
         tiles.add(
           ListTile(
@@ -162,27 +162,27 @@ class _TimerHomePageState extends State<TimerHomePage> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text('목표 달성도'),
+            title: const Text('목표 달성도'),
             content: SingleChildScrollView(
               child: Column(
                 children: [
                   Lottie.asset('assets/finish.json',
                       width: 200, height: 200, fit: BoxFit.cover),
                   goalAchievement.isNaN
-                      ? Text(
+                      ? const Text(
                           '0%',
                           style: TextStyle(fontSize: 20),
                         )
                       : Text(
                           '$goalAchievement %',
-                          style: TextStyle(fontSize: 20),
+                          style: const TextStyle(fontSize: 20),
                         ),
                 ],
               ),
             ),
             actions: <Widget>[
               TextButton(
-                child: Text('My page'),
+                child: const Text('My page'),
                 onPressed: () {
                   Navigator.pop(context);
                   widget.onMyPage();
@@ -266,7 +266,7 @@ class _TimerHomePageState extends State<TimerHomePage> {
                       ],
                     ),
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 40,
                   ),
                   Row(
@@ -293,12 +293,13 @@ class _TimerHomePageState extends State<TimerHomePage> {
                               text: 'Finish',
                               onPressed: () async {
                                 _stop();
+                                _showDialog(context);
                                 if (currentStatus == StudyStatus.studying) {
-                                  _studyAndBreakTime.add(_elapsedStudyTime);
+                                  studyAndBreakTime.add(_elapsedStudyTime);
                                   _elapsedStudyTime = Duration.zero;
-                                  _studyAndBreakTime.add(Duration.zero);
+                                  studyAndBreakTime.add(Duration.zero);
                                 } else {
-                                  _studyAndBreakTime.add(_elapsedBreakTime);
+                                  studyAndBreakTime.add(_elapsedBreakTime);
                                   _elapsedBreakTime = Duration.zero;
                                 }
                                 currentStatus = StudyStatus.initial;
@@ -311,19 +312,17 @@ class _TimerHomePageState extends State<TimerHomePage> {
                                         widget.totalStudyTime.toString(),
                                     totalBreakTime:
                                         getTotalBreakTime().toString(),
-                                    studyAndBreakTime: _studyAndBreakTime,
+                                    studyAndBreakTime: studyAndBreakTime,
                                   ),
                                 );
-
-                                _showDialog(context);
                               },
                             ),
                     ],
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 20,
                   ),
-                  _studyAndBreakTime.length >= 2
+                  studyAndBreakTime.length >= 2
                       ? Container(
                           width: double.infinity,
                           decoration: BoxDecoration(

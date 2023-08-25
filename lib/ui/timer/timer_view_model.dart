@@ -5,12 +5,12 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:random_break_timer/data/model/study_data.dart';
 import 'package:intl/intl.dart';
 
-class MainViewModel {
+class TimerViewModel {
   bool isPause = false;
   bool isStudying = false;
   Timer? timer;
-  Duration time = Duration(seconds: 1);
-  Duration elapsedTime = Duration(seconds: 1);
+  Duration time = const Duration(seconds: 1);
+  Duration elapsedTime = const Duration(seconds: 1);
 
   void start() {
     isPause = false;
