@@ -49,6 +49,9 @@ class _TimerHomePageState extends State<TimerHomePage> {
     if (_oddIndexedNumbers.isEmpty) {
       return Duration.zero;
     }
+    if (_oddIndexedNumbers.length == 1) {
+      return _oddIndexedNumbers[0];
+    }
     return _oddIndexedNumbers.reduce((a, b) => a + b);
   }
 
@@ -284,33 +287,37 @@ class _TimerHomePageState extends State<TimerHomePage> {
                               : CustomButton(
                                   onPressed: () => _startBreakTime(),
                                   text: 'Break Time Start'),
-                      CustomButton(
-                        text: 'Finish',
-                        onPressed: () async {
-                          _stop();
-                          if (currentStatus == StudyStatus.studying) {
-                            _studyAndBreakTime.add(_elapsedStudyTime);
-                            _elapsedStudyTime = Duration.zero;
-                            _studyAndBreakTime.add(Duration.zero);
-                          } else {
-                            _studyAndBreakTime.add(_elapsedBreakTime);
-                            _elapsedBreakTime = Duration.zero;
-                          }
-                          currentStatus == StudyStatus.finished;
-                          await model.saveStudyData(
-                            StudyData(
-                              date: model.formatDate(DateTime.now()),
-                              totalStudyTime: getTotalStudyTime().toString(),
-                              targetedStudyTime:
-                                  widget.totalStudyTime.toString(),
-                              totalBreakTime: getTotalBreakTime().toString(),
-                              studyAndBreakTime: _studyAndBreakTime,
-                            ),
-                          );
+                      currentStatus == StudyStatus.initial
+                          ? CustomButton(onPressed: (null), text: 'finish')
+                          : CustomButton(
+                              text: 'Finish',
+                              onPressed: () async {
+                                _stop();
+                                if (currentStatus == StudyStatus.studying) {
+                                  _studyAndBreakTime.add(_elapsedStudyTime);
+                                  _elapsedStudyTime = Duration.zero;
+                                  _studyAndBreakTime.add(Duration.zero);
+                                } else {
+                                  _studyAndBreakTime.add(_elapsedBreakTime);
+                                  _elapsedBreakTime = Duration.zero;
+                                }
+                                currentStatus = StudyStatus.initial;
+                                await model.saveStudyData(
+                                  StudyData(
+                                    date: model.formatDate(DateTime.now()),
+                                    totalStudyTime:
+                                        getTotalStudyTime().toString(),
+                                    targetedStudyTime:
+                                        widget.totalStudyTime.toString(),
+                                    totalBreakTime:
+                                        getTotalBreakTime().toString(),
+                                    studyAndBreakTime: _studyAndBreakTime,
+                                  ),
+                                );
 
-                          _showDialog(context);
-                        },
-                      ),
+                                _showDialog(context);
+                              },
+                            ),
                     ],
                   ),
                   SizedBox(
