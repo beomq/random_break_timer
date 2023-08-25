@@ -82,17 +82,16 @@ class MainViewModel {
       final oldData = existingData.first;
       final oldDataKey = box.keyAt(box.values.toList().indexOf(oldData));
 
+      oldData.targetedStudyTime =
+          durationToString(stringToDuration(data.targetedStudyTime));
       oldData.totalStudyTime = durationToString(
           stringToDuration(oldData.totalStudyTime) +
               stringToDuration(data.totalStudyTime));
-      oldData.targetedStudyTime = durationToString(
-          stringToDuration(oldData.targetedStudyTime) +
-              stringToDuration(data.targetedStudyTime));
       oldData.totalBreakTime = durationToString(
           stringToDuration(oldData.totalBreakTime) +
               stringToDuration(data.totalBreakTime));
 
-      oldData.StudyAndBreakTime.addAll(data.StudyAndBreakTime);
+      oldData.studyAndBreakTime.addAll(data.studyAndBreakTime);
       box.put(oldDataKey, oldData);
     }
   }
@@ -106,15 +105,12 @@ class MainViewModel {
   }
 
   String formatDuration(Duration duration) {
-    String twoDigits(int n) => n.toString().padLeft(2, "0");
-    String hours =
-        duration.inHours != 0 ? "${twoDigits(duration.inHours)} : " : "";
-    String minutes = duration.inMinutes != 0
-        ? "${twoDigits(duration.inMinutes.remainder(60))} : "
-        : '';
-    String seconds = twoDigits(duration.inSeconds.remainder(60));
-
-    return hours + minutes + seconds;
+    String hours = duration.inHours > 0 ? '${duration.inHours}시 ' : '';
+    String minutes =
+        duration.inMinutes % 60 > 0 ? '${duration.inMinutes % 60}분 ' : '';
+    String seconds =
+        duration.inSeconds % 60 > 0 ? '${duration.inSeconds % 60}초 ' : '0초';
+    return '$hours$minutes$seconds';
   }
 
   String formatDate(DateTime date) {
