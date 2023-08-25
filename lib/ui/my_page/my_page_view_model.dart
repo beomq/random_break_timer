@@ -62,7 +62,7 @@ class MyPageViewModel {
     String minutes =
         duration.inMinutes % 60 > 0 ? '${duration.inMinutes % 60}분 ' : '';
     String seconds =
-        duration.inSeconds % 60 > 0 ? '${duration.inSeconds % 60}초 ' : '';
+        duration.inSeconds % 60 > 0 ? '${duration.inSeconds % 60}초 ' : '0초';
     return '$hours$minutes$seconds';
   }
 

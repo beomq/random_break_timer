@@ -16,13 +16,13 @@ class StudyData extends HiveObject {
   String totalBreakTime;
 
   @HiveField(4)
-  List<Duration> StudyAndBreakTime;
+  List<Duration> studyAndBreakTime;
 
   StudyData({
     required this.date,
     required this.totalStudyTime,
     required this.targetedStudyTime,
     required this.totalBreakTime,
-    required this.StudyAndBreakTime,
+    required this.studyAndBreakTime,
   });
 }

@@ -8,9 +8,9 @@ part 'study_time_data.g.dart';
 @freezed
 class StudyTimeData with _$StudyTimeData {
   const factory StudyTimeData({
-    String studyTime,
-    String minBreakTime,
-    String maxBreakTime,
+    @Default('') String studyTime,
+    @Default('') String minBreakTime,
+    @Default('') String maxBreakTime,
   }) = _StudyTimeData;
 
   factory StudyTimeData.fromJson(Map<String, Object?> json) =>
