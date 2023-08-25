@@ -81,17 +81,18 @@ class _TimerHomePageState extends State<TimerHomePage> {
     }
     _isPause = false;
     currentStatus = StudyStatus.studying;
-    _timer = Timer.periodic(
-      const Duration(seconds: 1),
-      (timer) {
-        if (_time != Duration.zero) {
-          setState(() {
-            _time -= const Duration(seconds: 1);
-            _elapsedStudyTime += const Duration(seconds: 1);
-          });
-        }
-      },
-    );
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_time != Duration.zero) {
+        setState(() {
+          _time -= const Duration(seconds: 1);
+          _elapsedStudyTime += const Duration(seconds: 1);
+        });
+      } else {
+        _studyAndBreakTime.add(_elapsedStudyTime);
+        _elapsedStudyTime = Duration.zero;
+        _timer?.cancel();
+      }
+    });
   }
 
   void _stop() {
@@ -287,6 +288,7 @@ class _TimerHomePageState extends State<TimerHomePage> {
                           if (currentStatus == StudyStatus.studying) {
                             _studyAndBreakTime.add(_elapsedStudyTime);
                             _elapsedStudyTime = Duration.zero;
+                            _studyAndBreakTime.add(Duration.zero);
                           } else {
                             _studyAndBreakTime.add(_elapsedBreakTime);
                             _elapsedBreakTime = Duration.zero;
@@ -299,7 +301,7 @@ class _TimerHomePageState extends State<TimerHomePage> {
                               targetedStudyTime:
                                   widget.totalStudyTime.toString(),
                               totalBreakTime: getTotalBreakTime().toString(),
-                              StudyAndBreakTime: _studyAndBreakTime,
+                              studyAndBreakTime: _studyAndBreakTime,
                             ),
                           );
 
