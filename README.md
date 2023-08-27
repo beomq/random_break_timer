@@ -1,16 +1,17 @@
 # random_break_timer
 
-목표달성 후 랜덤한 쉬는시간
+오늘의 목표 공부시간과 쉬는시간의 범위를 정하면 타이머가 작동 됩니다.
+어느정도 휴식을 해야 효율이 좋을지 찾아보기 위해 만들어진 앱입니다.
 
-## Getting Started
 
-This project is a starting point for a Flutter application.
 
-A few resources to get you started if this is your first Flutter project:
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+# Random Break Timer 개인정보처리방침
+
+개인정보 수집
+본 서비스는 어떠한 개인정보도 수집하지 않습니다
+
+
+최종 개인정보처리방침 수정일
+2023년 8월 28일
