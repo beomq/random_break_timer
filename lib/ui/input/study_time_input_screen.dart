@@ -14,6 +14,8 @@ class StudyTimeInputScreen extends StatefulWidget {
 class _StudyTimeInputScreenState extends State<StudyTimeInputScreen> {
   final TextEditingController studyTimeController = TextEditingController();
 
+  final TextEditingController pomodoroController = TextEditingController();
+
   final TextEditingController minBreakTimeController = TextEditingController();
 
   final TextEditingController maxBreakTimeController = TextEditingController();
@@ -91,6 +93,19 @@ class _StudyTimeInputScreenState extends State<StudyTimeInputScreen> {
                         },
                         icon: Icons.timer_sharp,
                       ),
+                      // CustomTextFormField(
+                      //   controller: pomodoroController,
+                      //   hintText: 'ex) 15:00',
+                      //   labelText: 'Pomodoro',
+                      //   validator: (String? value) {
+                      //     if (!RegExp(r'^([0-5]?\d):([0-5]\d)$')
+                      //         .hasMatch(value!)) {
+                      //       return '00:01 ~ 59:59 사이의 시간을 입력해주세요';
+                      //     }
+                      //     return null;
+                      //   },
+                      //   icon: Icons.tips_and_updates_outlined,
+                      // ),
                       CustomTextFormField(
                         controller: minBreakTimeController,
                         hintText: 'ex) 15:00',

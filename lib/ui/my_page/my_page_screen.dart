@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutterfire_ui/auth.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:random_break_timer/data/model/study_data.dart';
 import 'package:random_break_timer/ui/my_page/my_page_view_model.dart';
@@ -43,7 +44,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
   }
 
   Duration _getTotalStudyTime() {
-    Duration totalStudyTime = Duration();
+    Duration totalStudyTime = const Duration();
     int length = studyDataNotifier.value?.length ?? 0;
     for (int i = 0; i < length; i++) {
       var studyData = studyDataNotifier.value?.getAt(i);
@@ -55,7 +56,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
   }
 
   Duration _getTotalTargetedStudyTime() {
-    Duration totalTargetedStudyTime = Duration();
+    Duration totalTargetedStudyTime = const Duration();
     int length = studyDataNotifier.value?.length ?? 0;
     for (int i = 0; i < length; i++) {
       var studyData = studyDataNotifier.value?.getAt(i);
@@ -67,13 +68,6 @@ class _MyPageScreenState extends State<MyPageScreen> {
     return totalTargetedStudyTime;
   }
 
-  void _deleteSelectedItems() {
-    for (int i = studyDataNotifier.value!.length - 1; i >= 0; i--) {
-      model.allDelete();
-    }
-    studyDataNotifier.notifyListeners();
-  }
-
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<Box<StudyData>?>(
@@ -83,20 +77,34 @@ class _MyPageScreenState extends State<MyPageScreen> {
               body: SafeArea(
             child: Column(
               children: [
-                Row(
-                  children: [
-                    CircleAvatar(
-                      backgroundImage: NetworkImage(model.getProfileImageUrl()),
-                    ),
-                    Column(
-                      children: [
-                        Text('Profile'),
-                        Text(model.getNickname()),
-                      ],
-                    )
-                  ],
-                ),
-                Text('Study Recorded'),
+                // GestureDetector(
+                //   onTap: () {
+                //     Navigator.push(
+                //       context,
+                //       MaterialPageRoute(
+                //         builder: (context) => const ProfileScreen(
+                //           providerConfigs: [EmailProviderConfiguration()],
+                //           avatarSize: 100,
+                //         ),
+                //       ),
+                //     );
+                //   },
+                //   child: Row(
+                //     children: [
+                //       CircleAvatar(
+                //         backgroundImage:
+                //             NetworkImage(model.getProfileImageUrl()),
+                //       ),
+                //       Column(
+                //         children: [
+                //           Text('Profile'),
+                //           Text(model.getNickname()),
+                //         ],
+                //       )
+                //     ],
+                //   ),
+                // ),
+                const Text('Study Recorded'),
                 Container(
                   padding: const EdgeInsets.all(16.0),
                   child: Row(
@@ -120,7 +128,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                     ],
                   ),
                 ),
-                Text('지난날의 기록'),
+                const Text('지난 날의 기록'),
                 Expanded(
                   child: ListView.builder(
                     itemCount: studyDataNotifier.value?.length ?? 0,
@@ -141,12 +149,12 @@ class _MyPageScreenState extends State<MyPageScreen> {
                           model.deleteItemAtIndex(index);
                           studyDataNotifier.value = studyDataNotifier.value;
                           ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('항목이 삭제되었습니다.')));
+                              const SnackBar(content: Text('항목이 삭제되었습니다.')));
                           setState(() {});
                         },
                         background: Container(
                           color: Colors.red,
-                          child: Icon(Icons.delete, color: Colors.white),
+                          child: const Icon(Icons.delete, color: Colors.white),
                         ),
                         child: ExpansionTile(
                           title: Text(model.formatDate(studyData.date)),
@@ -191,19 +199,34 @@ class _MyPageScreenState extends State<MyPageScreen> {
                 ),
                 Container(
                   padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    children: [
-                      CustomButton(
-                        text: '선택 삭제',
-                        onPressed: _deleteSelectedItems,
-                      ),
-                      CustomButton(
-                        text: 'LOGOUT',
-                        onPressed: () {
-                          model.logout();
-                        },
-                      ),
-                    ],
+                  child: Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        CustomButton(
+                          text: 'LOGOUT',
+                          onPressed: () {
+                            model.logout();
+                          },
+                        ),
+                        CustomButton(
+                          text: 'Profile Setting',
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const ProfileScreen(
+                                  providerConfigs: [
+                                    EmailProviderConfiguration()
+                                  ],
+                                  avatarSize: 100,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],

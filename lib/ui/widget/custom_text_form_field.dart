@@ -7,7 +7,8 @@ class CustomTextFormField extends StatelessWidget {
   final FormFieldValidator<String>? validator;
   final IconData icon;
 
-  CustomTextFormField({
+  const CustomTextFormField({
+    super.key,
     required this.controller,
     required this.hintText,
     required this.labelText,

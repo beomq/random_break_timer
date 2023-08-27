@@ -4,7 +4,8 @@ class CustomBottomNavigationBar extends StatefulWidget {
   final int initialIndex;
   final List<Widget> pages;
 
-  CustomBottomNavigationBar({required this.pages, this.initialIndex = 0});
+  const CustomBottomNavigationBar(
+      {super.key, required this.pages, this.initialIndex = 0});
 
   @override
   _CustomBottomNavigationBarState createState() =>

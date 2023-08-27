@@ -65,8 +65,8 @@ class _TabPageState extends State<TabPage> {
         },
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.refresh),
-            label: 'Refresh',
+            icon: Icon(Icons.restart_alt_rounded),
+            label: 'Reset',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.timer),

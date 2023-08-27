@@ -11,11 +11,11 @@ import 'package:random_break_timer/ui/widget/custom_time_text.dart';
 
 class TimerScreen extends StatefulWidget {
   final Function() onMyPage;
-  Duration totalStudyTime;
-  Duration minBreakTime;
-  Duration maxBreakTime;
+  final Duration totalStudyTime;
+  final Duration minBreakTime;
+  final Duration maxBreakTime;
 
-  TimerScreen({
+  const TimerScreen({
     super.key,
     required this.totalStudyTime,
     required this.minBreakTime,
@@ -49,9 +49,7 @@ class _TimerScreenState extends State<TimerScreen> {
     if (studyTimes.isEmpty) {
       return Duration.zero;
     }
-    if (studyTimes.length == 1) {
-      return Duration(seconds: studyTimes.length);
-    }
+
     return studyTimes.reduce((a, b) => a + b);
   }
 
@@ -203,15 +201,6 @@ class _TimerScreenState extends State<TimerScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Hello User',
-                      style: TextStyle(
-                        fontSize: 30,
-                      ),
-                    ),
-                  ),
                   Container(
                     width: double.infinity,
                     decoration: BoxDecoration(
@@ -287,7 +276,8 @@ class _TimerScreenState extends State<TimerScreen> {
                               : CustomButton(
                                   onPressed: () => _startBreakTime(),
                                   text: 'Break Time Start'),
-                      currentStatus == StudyStatus.initial
+                      currentStatus == StudyStatus.initial ||
+                              studyAndBreakTime.length < 2
                           ? CustomButton(onPressed: (null), text: 'finish')
                           : CustomButton(
                               text: 'Finish',
