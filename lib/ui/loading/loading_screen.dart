@@ -25,13 +25,6 @@ class _LoadingScreenState extends State<LoadingScreen> {
                 children: [
                   Lottie.asset('assets/Lottie1.json',
                       height: 200, fit: BoxFit.cover),
-                  const SizedBox(
-                    height: 30,
-                  ),
-                  const Text(
-                    '오늘도 화이팅!',
-                    style: TextStyle(fontSize: 30),
-                  ),
                 ],
               ),
             ),

@@ -118,7 +118,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                       CustomRecordedContainer(
                           iconData: Icons.emoji_events_outlined,
                           resultText:
-                              '${(_getTotalStudyTime().inSeconds / _getTotalTargetedStudyTime().inSeconds * 100).toStringAsFixed(2)} %',
+                              '${(_getTotalStudyTime().inSeconds / _getTotalTargetedStudyTime().inSeconds * 100).isNaN ? '0' : (_getTotalStudyTime().inSeconds / _getTotalTargetedStudyTime().inSeconds * 100).toStringAsFixed(2)} %',
                           detailText: '총 목표 달성율'),
                       CustomRecordedContainer(
                           iconData: Icons.hotel_class_outlined,
@@ -204,7 +204,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         CustomButton(
-                          text: 'LOGOUT',
+                          text: 'Logout',
                           onPressed: () {
                             model.logout();
                           },
