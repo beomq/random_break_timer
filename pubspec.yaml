@@ -40,12 +40,12 @@ dependencies:
   json_annotation: ^4.8.1
   http: ^1.1.0
   lottie: ^2.5.0
-  firebase_auth: ^4.6.3
+
   google_sign_in: ^5.4.4
   flutter_signin_button: ^2.0.0
   cloud_firestore: ^4.8.1
   firebase_storage: ^11.2.3
-  firebase_core: ^2.14.0
+
   flutterfire_ui: ^0.4.3+20
   sign_in_with_apple: ^3.3.0
   flutter_dotenv: ^5.1.0
@@ -58,6 +58,8 @@ dependencies:
   hive_generator: ^2.0.0
   flutter_local_notifications: ^15.1.0+1
   awesome_notifications: ^0.6.19
+  firebase_auth: ^4.8.0
+  firebase_core: ^2.15.1
 
 
 dev_dependencies:
@@ -93,7 +95,7 @@ flutter:
 #    - assets/60.json
 #    - assets/80.json
 #    - assets/100.json
-    - .env
+
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
