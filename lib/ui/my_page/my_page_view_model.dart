@@ -4,11 +4,6 @@ import 'package:random_break_timer/data/model/study_data.dart';
 import 'package:intl/intl.dart';
 
 class MyPageViewModel {
-  Future<List<StudyData>> getCachedStudyData() async {
-    var data = await Hive.box<StudyData>(getUserUid());
-    return data.values.toList();
-  }
-
   void logout() async {
     await FirebaseAuth.instance.signOut();
   }

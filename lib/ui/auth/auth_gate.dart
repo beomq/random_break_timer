@@ -38,7 +38,7 @@ class AuthGate extends StatelessWidget {
               headerBuilder: (context, constraints, _) {
                 return const Center(
                   child: Text(
-                    'Random Break Timer',
+                    'random break timer',
                     style: TextStyle(fontSize: 40),
                   ),
                 );

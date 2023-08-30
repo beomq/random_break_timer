@@ -132,7 +132,7 @@ class _TimerScreenState extends State<TimerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    Column _buildStudyBreakPairs() {
+    Column buildStudyBreakPairs() {
       List<Widget> tiles = [];
 
       for (int i = 0; i < studyAndBreakTime.length - 1; i += 2) {
@@ -155,7 +155,7 @@ class _TimerScreenState extends State<TimerScreen> {
         (getTotalStudyTime().inSeconds / widget.totalStudyTime.inSeconds * 100)
             .roundToDouble();
 
-    void _showDialog(BuildContext context) {
+    void showAchievementDialog(BuildContext context) {
       showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -267,7 +267,7 @@ class _TimerScreenState extends State<TimerScreen> {
                           : CustomButton(
                               onPressed: () => _start(), text: 'Study Start'),
                       currentStatus == StudyStatus.initial
-                          ? CustomButton(
+                          ? const CustomButton(
                               onPressed: (null), text: '◀️ Click Here')
                           : currentStatus == StudyStatus.breakTime && !_isPause
                               ? CustomButton(
@@ -278,7 +278,8 @@ class _TimerScreenState extends State<TimerScreen> {
                                   text: 'Break Time Start'),
                       currentStatus == StudyStatus.initial ||
                               studyAndBreakTime.length < 2
-                          ? CustomButton(onPressed: (null), text: 'finish')
+                          ? const CustomButton(
+                              onPressed: (null), text: 'finish')
                           : CustomButton(
                               text: 'Finish',
                               onPressed: () async {
@@ -291,7 +292,7 @@ class _TimerScreenState extends State<TimerScreen> {
                                   studyAndBreakTime.add(_elapsedBreakTime);
                                   _elapsedBreakTime = Duration.zero;
                                 }
-                                _showDialog(context);
+                                showAchievementDialog(context);
                                 currentStatus = StudyStatus.initial;
                                 await model.saveStudyData(
                                   StudyData(
@@ -324,7 +325,7 @@ class _TimerScreenState extends State<TimerScreen> {
                                 alignment: Alignment.centerLeft,
                                 child: Text('공부 시간'),
                               ),
-                              _buildStudyBreakPairs(),
+                              buildStudyBreakPairs(),
                             ],
                           ))
                       : Container()

@@ -27,12 +27,12 @@ class _TabPageState extends State<TabPage> {
               onMyPage: _onMyPage,
             )
           : TimerScreen(
-              totalStudyTime: Duration(),
-              minBreakTime: Duration(),
-              maxBreakTime: Duration(),
+              totalStudyTime: const Duration(),
+              minBreakTime: const Duration(),
+              maxBreakTime: const Duration(),
               onMyPage: _onMyPage,
             ),
-      MyPageScreen()
+      const MyPageScreen()
     ];
   }
 

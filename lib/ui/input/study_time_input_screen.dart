@@ -5,7 +5,7 @@ import 'package:random_break_timer/ui/widget/custom_text_form_field.dart';
 class StudyTimeInputScreen extends StatefulWidget {
   final Function(Duration, Duration, Duration) onStudyStart;
 
-  StudyTimeInputScreen({required this.onStudyStart});
+  const StudyTimeInputScreen({super.key, required this.onStudyStart});
 
   @override
   State<StudyTimeInputScreen> createState() => _StudyTimeInputScreenState();
