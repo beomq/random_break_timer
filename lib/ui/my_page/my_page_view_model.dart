@@ -8,6 +8,10 @@ class MyPageViewModel {
     await FirebaseAuth.instance.signOut();
   }
 
+  void unregister() async {
+    await FirebaseAuth.instance.currentUser?.delete();
+  }
+
   void allDelete() async {
     var box = Hive.box<StudyData>(getUserUid());
     await box.clear();

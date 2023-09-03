@@ -27,6 +27,7 @@ class AuthGate extends StatelessWidget {
           ),
         ),
       ),
+      debugShowCheckedModeBanner: false,
       home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
@@ -36,12 +37,14 @@ class AuthGate extends StatelessWidget {
                 EmailProviderConfiguration(),
               ],
               headerBuilder: (context, constraints, _) {
-                return const Center(
-                  child: Text(
-                    'random break timer',
-                    style: TextStyle(fontSize: 40),
+                return Center(
+                    child: AspectRatio(
+                  aspectRatio: 1,
+                  child: Image.asset(
+                    'assets/splash.png',
+                    fit: BoxFit.cover,
                   ),
-                );
+                ));
               },
             );
           }

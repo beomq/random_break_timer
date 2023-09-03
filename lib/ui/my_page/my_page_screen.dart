@@ -77,33 +77,6 @@ class _MyPageScreenState extends State<MyPageScreen> {
               body: SafeArea(
             child: Column(
               children: [
-                // GestureDetector(
-                //   onTap: () {
-                //     Navigator.push(
-                //       context,
-                //       MaterialPageRoute(
-                //         builder: (context) => const ProfileScreen(
-                //           providerConfigs: [EmailProviderConfiguration()],
-                //           avatarSize: 100,
-                //         ),
-                //       ),
-                //     );
-                //   },
-                //   child: Row(
-                //     children: [
-                //       CircleAvatar(
-                //         backgroundImage:
-                //             NetworkImage(model.getProfileImageUrl()),
-                //       ),
-                //       Column(
-                //         children: [
-                //           Text('Profile'),
-                //           Text(model.getNickname()),
-                //         ],
-                //       )
-                //     ],
-                //   ),
-                // ),
                 const Text('Study Recorded'),
                 Container(
                   padding: const EdgeInsets.all(16.0),
@@ -204,25 +177,66 @@ class _MyPageScreenState extends State<MyPageScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         CustomButton(
-                          text: 'Logout',
+                          text: '로그아웃',
                           onPressed: () {
-                            model.logout();
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  content: const Text('로그아웃 하시겠습니까?'),
+                                  actions: <Widget>[
+                                    TextButton(
+                                      child: const Text('로그아웃'),
+                                      onPressed: () {
+                                        Navigator.of(context).pop(true);
+                                      },
+                                    ),
+                                    TextButton(
+                                      child: const Text('취소'),
+                                      onPressed: () {
+                                        Navigator.of(context).pop(false);
+                                      },
+                                    ),
+                                  ],
+                                );
+                              },
+                            ).then((value) {
+                              if (value == true) {
+                                model.logout();
+                              }
+                            });
                           },
                         ),
                         CustomButton(
-                          text: 'Profile Setting',
+                          text: '회원탈퇴',
                           onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const ProfileScreen(
-                                  providerConfigs: [
-                                    EmailProviderConfiguration()
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: const Text('정말 탈퇴 하시겠습니까?'),
+                                  content: const Text('탈퇴 후에는 모든 데이터가 삭제됩니다.'),
+                                  actions: <Widget>[
+                                    TextButton(
+                                      child: const Text('회원탈퇴'),
+                                      onPressed: () {
+                                        Navigator.of(context).pop(true);
+                                      },
+                                    ),
+                                    TextButton(
+                                      child: const Text('취소'),
+                                      onPressed: () {
+                                        Navigator.of(context).pop(false);
+                                      },
+                                    ),
                                   ],
-                                  avatarSize: 100,
-                                ),
-                              ),
-                            );
+                                );
+                              },
+                            ).then((value) {
+                              if (value == true) {
+                                model.unregister();
+                              }
+                            });
                           },
                         ),
                       ],

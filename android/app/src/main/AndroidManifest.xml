@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="random_break_timer"
+        android:label="랜브타"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

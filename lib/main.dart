@@ -12,9 +12,16 @@ late final Box<StudyData> datas;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  try {
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    }
+  } catch (e) {
+    print("Firebase initialization error: $e");
+  }
+
   final FirebaseAuth auth = FirebaseAuth.instance;
   User? user = auth.currentUser;
   await Hive.initFlutter();
@@ -52,6 +59,7 @@ class _MyAppState extends State<MyApp> {
         primaryColor: const Color(0xffa8c7fa),
         fontFamily: 'MavenPro',
       ),
+      debugShowCheckedModeBanner: false,
       home: const AuthGate(),
     );
   }
